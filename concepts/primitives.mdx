@@ -1,0 +1,118 @@
+---
+title: Primitives
+description: What every Rafflesia response contains — data, warnings, evidence, and provenance — and why the shape is uniform.
+---
+
+A **primitive** is one deterministic operation over biological evidence:
+resolve an identifier, fetch a record, summarize confidence, detect pockets, run
+a search, execute a pinned query. Primitives are small on purpose. Composing
+them is the caller's job, which is what keeps each step auditable.
+
+Every primitive — over the CLI, the SDKs, or raw HTTP — returns the same
+envelope.
+
+## The envelope
+
+```json
+{
+  "ok": true,
+  "data": { "…": "operation-specific result" },
+  "warnings": [
+    { "code": "confidence_source_is_bfactor", "message": "…", "details": {} }
+  ],
+  "evidence": {
+    "row_count": 412,
+    "duration_ms": 38,
+    "warnings_count": 1,
+    "input_refs": ["…"],
+    "output_refs": ["…"],
+    "object_refs": ["obj_…"]
+  },
+  "provenance": {
+    "request_id": "req_…",
+    "operation": "proteins.confidence.summary",
+    "created_at": "2026-07-25T09:41:43Z",
+    "server_version": "…",
+    "input_hash": "sha256:…",
+    "parameters_hash": "sha256:…",
+    "database_snapshots": ["…"],
+    "generated_object_ids": ["obj_…"],
+    "tool_versions": ["…"],
+    "cache_hit": false
+  }
+}
+```
+
+`ok`, `warnings`, and `provenance` are always present. `data` is present on
+success; `error` replaces it on failure.
+
+### data
+
+The operation's result. Its schema is specific to the primitive and is published
+in the [API reference](/api-reference/introduction) — the SDKs derive their types
+from that same contract rather than mirroring it by hand.
+
+### warnings
+
+Non-fatal facts the caller must be able to see, each with a **stable code**. A
+warning is how Rafflesia avoids the two failure modes that matter most:
+returning something that looks authoritative but isn't, and hiding a caveat
+inside prose.
+
+Warnings are load-bearing. A B-factor column that is not a pLDDT score, a
+coordinate mapping that is lossy, a flank that ran off the end of a contig, an
+omitted relation in a trimmed ontology context — all of these arrive as warnings
+rather than silent adjustments.
+
+<Tip>
+  Read `warnings` on every response, not just failures. `evidence.warnings_count`
+  makes it cheap to branch on.
+</Tip>
+
+### evidence
+
+A mechanical summary for agents: how many rows, how long it took, how many
+warnings, and the input/output/object references detected in the exchange. It
+exists so a caller can chain primitives — and audit the chain — without parsing
+`data` schemas it doesn't understand.
+
+### provenance
+
+What produced the answer: the operation id, a request id, the server version,
+canonical hashes of the request and its parameters, the exact database snapshots
+read, any objects generated, and the versions of the tools invoked. Two
+identical calls produce identical hashes; a differing hash means the inputs
+differed.
+
+## Errors
+
+Failures use the same envelope with `ok: false` and a typed `error`:
+
+```json
+{
+  "ok": false,
+  "warnings": [],
+  "provenance": { "request_id": "req_…", "operation": "proteins.structures.fetch" },
+  "error": {
+    "type": "resource_missing",
+    "code": "structure_not_found",
+    "message": "structure 1IEP is not cached; fetch it first, for example: rafflesia proteins structures fetch 1IEP --allow-network",
+    "param": "structure_id",
+    "doc_url": "https://docs.rafflesia.ai/errors/structure_not_found",
+    "details": {}
+  }
+}
+```
+
+`type` is the coarse category, `code` is the stable specific code, and `param`
+names the offending request field when one is identifiable. Messages are written
+to be actionable — where a caller can fix the condition with another primitive,
+the message names it. See [Errors](/errors) for the categories and their HTTP
+statuses.
+
+## Object references
+
+Large or reusable payloads — structures, prepared parses, exported relations,
+prediction results — are content-addressed **objects** rather than inline
+blobs. They surface as an `object_id`, a `uri`, and a `sha256`, so a downstream
+call can consume exactly the bytes an upstream call produced.

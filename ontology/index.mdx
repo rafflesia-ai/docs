@@ -1,0 +1,93 @@
+---
+title: Ontology
+description: The typed semantic layer that makes every cross-source biology query checked, portable, and reproducible.
+---
+
+Biology lives in dozens of tables. A structure sits in one source, its variants
+in another, its ligands in a third — and each one names the same thing its own
+way: different ids, different chain labels, different residue numbering. Join
+them the obvious way and the query runs, returns rows, and is silently wrong.
+
+The **Rafflesia Ontology** is the typed semantic layer that sits between those
+sources and your queries. It gives every identifier a declared meaning, so a
+join is only allowed when the two sides genuinely refer to the same biology.
+The result is a single vocabulary that agents and pipelines can query without
+guessing — and every answer is reproducible down to the ontology digest it was
+computed against.
+
+## The problem it solves
+
+Consider one residue position as it appears in two relations:
+
+| Column   | `variant_mappings`                 | `residue_features`                 | Same residue? |
+| -------- | ---------------------------------- | ---------------------------------- | ------------- |
+| position | `142` · `structure_residue_number` | `142` · `structure_residue_number` | yes           |
+| position | `88` · `protein_sequence_position` | —                                  | —             |
+
+The two `structure_residue_number` values genuinely match; the
+`protein_sequence_position` is a _different coordinate system_ that happens to
+hold an integer too. A plain SQL `JOIN ... ON residue_number = position` that
+lands on the wrong column matches a sequence position against a structure residue
+number and quietly returns garbage. No error is raised.
+
+The ontology makes each column's kind and coordinate system explicit, so the
+mismatch is caught before the join runs instead of surfacing as a wrong answer
+downstream.
+
+<Note>
+  **The one-line thesis**
+
+  A join is a claim that two things are the same. The ontology is where that
+  claim gets type-checked.
+</Note>
+
+## The core concepts
+
+The ontology is one declarative file (`ontology.v1.json`) built from a few kinds
+of declaration. Each page below covers one in depth.
+
+<Columns cols={2}>
+  <Card
+    title="Identity & namespaces"
+    href="/ontology/identity">
+    Every column carries a declared kind, namespace, and coordinate system, so look-alike values never match by accident.
+  </Card>
+  <Card
+    title="Lossy & range mappings"
+    href="/ontology/equivalences">
+    How the ontology relates identities that are the same but imperfect, marking lossy and range joins instead of hiding them.
+  </Card>
+  <Card
+    title="Relations"
+    href="/ontology/relations">
+    The 54 typed biological sources — structures, sequences, evidence, ligands — that queries import and join.
+  </Card>
+  <Card
+    title="Joins & join safety"
+    href="/ontology/joins">
+    Reciprocal, typed relationships that are checked against the ontology before a single row is read.
+  </Card>
+  <Card
+    title="RQL recipes"
+    href="/ontology/rql">
+    Small, readable .rql files that pin one evidence question and compile to portable, reproducible SQL.
+  </Card>
+</Columns>
+
+## How a query flows through it
+
+1. An `.rql` recipe **imports** the relations it needs (see [Relations](/ontology/relations)).
+2. It declares a **join tree** over those relations, keyed on typed identities (see [Joins](/ontology/joins)).
+3. The ontology **checks every join** against the shared, versioned schema — namespaces and coordinate systems must line up, or the join is refused.
+4. The recipe selects **dimensions** to group by and **measurements** to aggregate (see [RQL recipes](/ontology/rql)).
+5. It **compiles to portable SQL**, stamped with the ontology digest so the exact run can be reproduced.
+
+## Why it matters
+
+- **Cross-source queries stop being wrong.** Identity is declared, not inferred, so a fact recorded in one source connects cleanly to every other.
+- **The same models do better.** Point a frontier model at raw tables and it guesses joins and identifiers; give it the typed ontology and it answers correctly far more often, because the meaning it needs is written down.
+- **Every run is reproducible.** A recipe plus an ontology digest fully determines the SQL and the result.
+- **Recipes are portable.** One typed ontology compiles the same `.rql` to whatever SQL engine sits underneath.
+
+Start with [Identity & namespaces](/ontology/identity) — it is the
+foundation the other four concepts build on.

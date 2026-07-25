@@ -1,47 +1,135 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: Quickstart
+description: Install the CLI, authenticate against the API, and pull your first piece of evidence.
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
+## 1. Install the CLI
 
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+```bash
+curl -fsSL https://rafflesia.ai/install.sh | sh
+```
 
-## Prerequisites
+The installer drops a single static binary in `~/.rafflesia/bin` and adds it to
+your shell's `PATH`. Set `RAFFLESIA_INSTALL_DIR` to put it somewhere else, or
+`RAFFLESIA_NO_MODIFY_PATH=1` to leave your shell config alone.
 
-Before you begin, you must have:
+```bash
+rafflesia version
+```
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
+## 2. Authenticate
 
-## Get started
+Log in against the hosted API. `auth login` records the server it authenticated
+against, so a credential minted for one server is never replayed against
+another.
 
-<Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+```bash
+rafflesia auth login --server https://api.rafflesia.ai
+```
 
-    ```bash
-    npm install your-package
-    ```
-  </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
+That opens AuthKit in a browser and stores a session credential. To use an API
+key from the dashboard instead — the right choice for scripts and agents — pass
+it in the environment:
 
-    ```bash
-    your-cli init
-    ```
-  </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
+```bash
+export RAFFLESIA_API_BASE_URL=https://api.rafflesia.ai
+export RAFFLESIA_API_KEY=sk_production_…
+rafflesia auth status
+```
 
-    ```bash
-    your-cli start
-    ```
-  </Step>
-</Steps>
+<Note>
+  The CLI's built-in default server is `http://127.0.0.1:8081`, which is a local
+  development engine. Always point it at `https://api.rafflesia.ai` — with
+  `--server`, `RAFFLESIA_API_BASE_URL`, or `auth login --server` — before you
+  expect real data.
+</Note>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## 3. Resolve an identifier
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
-</Tip>
+Most primitives take a target id. `refs resolve` turns a name, accession, or
+free-text query into typed candidates so you never guess an identifier:
+
+```bash
+rafflesia refs resolve "kinase domain human ABL1" --limit 5
+```
+
+## 4. Fetch evidence
+
+Three representative primitives:
+
+<CodeGroup>
+
+```bash Sequence
+rafflesia sequences records fetch P00533 --json
+```
+
+```bash Structure
+rafflesia proteins structures fetch 1IEP --source pdb --json
+```
+
+```bash Confidence
+rafflesia proteins confidence summary 1IEP --chain A --threshold 70 --json
+```
+
+</CodeGroup>
+
+Every one of them prints the same envelope shape: `ok`, `data`, `warnings`, and
+`provenance`. See [Primitives](/concepts/primitives) for what each field means.
+
+## 5. Search for homologs
+
+`POST /v1/homology` targets exactly one immutable database release and returns
+measurements with provenance:
+
+```bash
+curl https://api.rafflesia.ai/v1/homology \
+  -H "Authorization: Bearer $RAFFLESIA_API_KEY" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query":  { "kind": "protein_sequence", "sequence": "MKTAYIAKQR..." },
+    "target": { "database_release_id": "dbr_..." },
+    "results": {
+      "unit": "target",
+      "evidence": "pairwise_sequence_alignment",
+      "max_results": 50,
+      "significance_requirement": "if_available"
+    }
+  }'
+```
+
+The computation is durable: retrieve it at `GET /v1/homology/{id}` and page its
+results at `GET /v1/homology/{id}/results`. See the
+[homology quickstart](/homology-search/quickstart).
+
+## 6. Query across sources
+
+Release-pinned SQL over typed relations. Every source is declared explicitly and
+every join is type-checked against the ontology before a row is read:
+
+```bash
+rafflesia query databases --json
+rafflesia query releases --database uniprot --json
+
+rafflesia query run \
+  --source records=uniprot,2026_07,source_sequence_records \
+  --sql 'select accession, sequence_length from records order by sequence_length desc' \
+  --limit 20 --json
+```
+
+## Next steps
+
+<Columns cols={2}>
+  <Card title="Primitives" icon="box" href="/concepts/primitives">
+    The envelope, warnings, and evidence summary every response shares.
+  </Card>
+  <Card title="Determinism" icon="lock" href="/concepts/determinism">
+    Release pinning, digests, and what "reproducible" means here.
+  </Card>
+  <Card title="CLI overview" icon="square-terminal" href="/cli/overview">
+    Global flags, JSON output, `--print`, and `--explain`.
+  </Card>
+  <Card title="SDKs" icon="package" href="/sdks">
+    The same surface from Node, Python, Go, Rust, Java, .NET, Ruby, and PHP.
+  </Card>
+</Columns>

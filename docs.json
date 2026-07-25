@@ -1,72 +1,210 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "mint",
-  "name": "Mintlify Starter Kit",
+  "theme": "maple",
+  "name": "Rafflesia",
+  "description": "Deterministic biological evidence primitives over sequences, structures, and tabular evidence.",
   "colors": {
-    "primary": "#16A34A",
-    "light": "#07C983",
-    "dark": "#15803D"
+    "primary": "#000000",
+    "light": "#FFFFFF",
+    "dark": "#000000"
   },
-  "favicon": "/favicon.svg",
+  "appearance": {
+    "default": "system"
+  },
+  "background": {
+    "decoration": "grid",
+    "color": {
+      "light": "#FFFFFF",
+      "dark": "#000000"
+    }
+  },
+  "fonts": {
+    "heading": {
+      "family": "Geist",
+      "weight": 500
+    },
+    "body": {
+      "family": "Geist"
+    }
+  },
+  "styling": {
+    "eyebrows": "breadcrumbs",
+    "codeblocks": "dark"
+  },
+  "icons": {
+    "library": "lucide"
+  },
+  "logo": {
+    "light": "/logo/light.svg",
+    "dark": "/logo/dark.svg",
+    "href": "https://rafflesia.ai"
+  },
+  "favicon": {
+    "light": "/favicon/light.svg",
+    "dark": "/favicon/dark.svg"
+  },
+  "search": {
+    "prompt": "Search the primitives"
+  },
   "navigation": {
-    "pages": [
+    "tabs": [
       {
-        "group": "Getting Started",
-        "pages": [
-          "index",
-          "quickstart"
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Getting started",
+            "pages": [
+              "index",
+              "quickstart",
+              "concepts/primitives",
+              "concepts/determinism"
+            ]
+          },
+          {
+            "group": "CLI",
+            "pages": [
+              "cli/overview",
+              "cli/authentication",
+              "cli/command-surface"
+            ]
+          },
+          {
+            "group": "Homology search",
+            "pages": [
+              "homology-search/index",
+              "homology-search/quickstart",
+              "homology-search/architecture"
+            ]
+          },
+          {
+            "group": "Ontology",
+            "pages": [
+              "ontology/index",
+              "ontology/identity",
+              "ontology/equivalences",
+              "ontology/relations",
+              "ontology/joins",
+              "ontology/rql"
+            ]
+          },
+          {
+            "group": "AI Foundry",
+            "pages": ["ai-foundry/index"]
+          },
+          {
+            "group": "Evals",
+            "pages": ["evals/index"]
+          }
+        ]
+      },
+      {
+        "tab": "SDKs",
+        "groups": [
+          {
+            "group": "SDKs",
+            "pages": ["sdks/index"]
+          }
+        ]
+      },
+      {
+        "tab": "API reference",
+        "groups": [
+          {
+            "group": "Reference",
+            "pages": ["api-reference/introduction", "errors"]
+          },
+          {
+            "group": "Endpoints",
+            "openapi": {
+              "source": "/api-reference/openapi.json",
+              "directory": "api-reference/endpoints"
+            }
+          }
         ]
       }
     ],
     "global": {
       "anchors": [
         {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
+          "anchor": "Dashboard",
+          "href": "https://dashboard.rafflesia.ai",
+          "icon": "layout-dashboard"
         },
         {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
+          "anchor": "SDKs on GitHub",
+          "href": "https://github.com/rafflesia-ai",
+          "icon": "github"
         }
       ]
     }
   },
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
   "navbar": {
     "links": [
       {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
+        "label": "rafflesia.ai",
+        "href": "https://rafflesia.ai"
       }
     ],
     "primary": {
       "type": "button",
-      "label": "Dashboard",
-      "href": "https://app.mintlify.com"
+      "label": "Get an API key",
+      "href": "https://dashboard.rafflesia.ai"
     }
-  },
-  "contextual": {
-    "options": [
-      "copy",
-      "view",
-      "chatgpt",
-      "claude",
-      "perplexity",
-      "mcp",
-      "cursor",
-      "vscode"
-    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "website": "https://rafflesia.ai",
+      "github": "https://github.com/rafflesia-ai"
+    },
+    "links": [
+      {
+        "header": "Product",
+        "items": [
+          { "label": "Homology search", "href": "/homology-search" },
+          { "label": "Ontology", "href": "/ontology" },
+          { "label": "AI Foundry", "href": "/ai-foundry" },
+          { "label": "Evals", "href": "/evals" }
+        ]
+      },
+      {
+        "header": "Developers",
+        "items": [
+          { "label": "Quickstart", "href": "/quickstart" },
+          { "label": "CLI", "href": "/cli/overview" },
+          { "label": "SDKs", "href": "/sdks" },
+          { "label": "API reference", "href": "/api-reference/introduction" }
+        ]
+      },
+      {
+        "header": "Company",
+        "items": [
+          { "label": "rafflesia.ai", "href": "https://rafflesia.ai" },
+          { "label": "Contact", "href": "mailto:contact@rafflesia.ai" }
+        ]
+      }
+    ]
+  },
+  "redirects": [
+    {
+      "source": "/errors/:code",
+      "destination": "/errors"
+    },
+    {
+      "source": "/api-reference",
+      "destination": "/api-reference/introduction"
+    },
+    {
+      "source": "/cli",
+      "destination": "/cli/overview"
     }
+  ],
+  "seo": {
+    "metatags": {
+      "og:site_name": "Rafflesia docs"
+    },
+    "indexing": "navigable"
+  },
+  "contextual": {
+    "options": ["copy", "view", "chatgpt", "claude", "mcp"]
   }
 }

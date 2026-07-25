@@ -1,0 +1,67 @@
+---
+title: Errors
+description: The error envelope, the coarse error categories and their HTTP statuses, and how to act on a stable error code.
+---
+
+Every failure — CLI, SDK, or HTTP — arrives as the standard
+[envelope](/concepts/primitives) with `ok: false` and a typed `error`:
+
+```json
+{
+  "ok": false,
+  "warnings": [],
+  "provenance": { "request_id": "req_…", "operation": "proteins.structures.fetch" },
+  "error": {
+    "type": "resource_missing",
+    "code": "structure_not_found",
+    "message": "structure 1IEP is not cached; fetch it first, for example: rafflesia proteins structures fetch 1IEP --allow-network",
+    "param": "structure_id",
+    "doc_url": "https://docs.rafflesia.ai/errors/structure_not_found",
+    "details": {}
+  }
+}
+```
+
+Branch on **`code`**. It is the stable identifier for a specific condition.
+`type` is the coarse category, useful for deciding whether to retry, fix the
+request, or stop.
+
+## Categories
+
+| `type` | HTTP | What it means | What to do |
+| --- | --- | --- | --- |
+| `invalid_request_error` | 422 | A field is missing, malformed, or semantically refused (an unauthorized join, an unmapped identity). | Fix the request. Retrying unchanged will fail identically. |
+| `resource_missing` | 404 | A well-formed identifier does not resolve to stored evidence. | Fetch or import the resource first — the message usually names the primitive that does it. |
+| `conflict_error` | 409 | A valid mutation would replace an immutable published resource. | Publish under a new release, or read the existing one. |
+| `rate_limit_error` | 429 | Too many requests. | Back off and retry. |
+| `api_error` | 500 | A genuine internal fault. | Retry; if it persists, send the `request_id`. |
+| `api_error` | 503 | A capability this deployment does not currently provide. | Retrying the same call will not help — the request was fine. |
+
+<Note>
+  A 503 is deliberately distinguished from a 500. "This deployment cannot do
+  that" and "we broke" call for different behavior from an agent, so they are not
+  reported the same way.
+</Note>
+
+## Codes you will meet early
+
+| Code | Category | Meaning |
+| --- | --- | --- |
+| `structure_not_found` | 404 | The structure is not stored. Fetch it: `rafflesia proteins structures fetch <id> --allow-network`. |
+| `sequence_not_found` | 404 | The sequence is not stored. Fetch or import it. |
+| `molecule_not_found` | 404 | The molecule is not stored. Import it: `rafflesia molecules import <path.sdf>`. |
+| `map_not_found` | 404 | The cryo-EM map is not stored. Fetch it. |
+| `sequence_empty` | 422 | The record exists but has no residues — a metadata-only entry. |
+| `relation_not_populated` | 404 | The relation exists in the ontology but holds no rows in the release you named. |
+| `release_not_sealed` | 409 | The release is still open; seal it before querying it as immutable. |
+| `relation_schema_outdated` | 409 | The relation's physical schema no longer matches its declaration. |
+| `service_unavailable` | 503 | The capability is not configured in this deployment. |
+
+`<operation>_invalid` and `<operation>_failed` codes also appear: the first is a
+caller-fixable 422 for that specific operation, the second a 500 internal fault.
+
+## Reporting a problem
+
+Every response carries `provenance.request_id`. Include it — with the
+`operation` and, if you have them, `input_hash` and `parameters_hash` — and the
+exact call can be located and re-run.

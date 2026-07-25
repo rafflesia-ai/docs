@@ -1,0 +1,3437 @@
+{
+  "components": {
+    "schemas": {
+      "APIError": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "description": "Stable specific error code.",
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": {},
+            "description": "Additional structured error details.",
+            "type": "object"
+          },
+          "doc_url": {
+            "description": "Stable documentation URL for this error code.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Human-readable error message.",
+            "type": "string"
+          },
+          "param": {
+            "description": "Request field responsible for the error when known.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Stable coarse error category.",
+            "enum": [
+              "invalid_request_error",
+              "resource_missing",
+              "conflict_error",
+              "rate_limit_error",
+              "authentication_error",
+              "permission_error",
+              "billing_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "code",
+          "message",
+          "doc_url"
+        ],
+        "type": "object"
+      },
+      "CreateHomologySearchRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/CreateHomologySearchRequest.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "constraints": {
+            "$ref": "#/components/schemas/HomologySearchConstraints"
+          },
+          "policy": {
+            "$ref": "#/components/schemas/HomologySearchPolicySelector"
+          },
+          "query": {
+            "$ref": "#/components/schemas/HomologyQuery"
+          },
+          "results": {
+            "$ref": "#/components/schemas/HomologySearchResultsRequest"
+          },
+          "target": {
+            "$ref": "#/components/schemas/HomologySearchTarget"
+          }
+        },
+        "required": [
+          "query",
+          "target",
+          "results"
+        ],
+        "type": "object"
+      },
+      "CreateHomologyTargetSpaceCompilationRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/CreateHomologyTargetSpaceCompilationRequest.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "database_release_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/HomologyDocumentFilter"
+          }
+        },
+        "required": [
+          "database_release_id",
+          "filter"
+        ],
+        "type": "object"
+      },
+      "DatabaseSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "digest": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "version"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyDatabaseList": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyDatabaseList.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyDatabaseList",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyDatabaseReleaseList": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyDatabaseReleaseList.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyDatabaseReleaseList",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyFilterSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyFilterSchema.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyFilterSchema",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologySearch": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologySearch.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologySearch",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologySearchList": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologySearchList.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologySearchList",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologySearchResultList": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologySearchResultList.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologySearchResultList",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyTargetSpace": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyTargetSpace.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyTargetSpace",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyTargetSpaceCompilation": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyTargetSpaceCompilation.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyTargetSpaceCompilation",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "ErrorDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "location": {
+            "description": "Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'",
+            "type": "string"
+          },
+          "message": {
+            "description": "Error message text",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value at the given location"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorModel": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/ErrorModel.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation specific to this occurrence of the problem.",
+            "examples": [
+              "Property foo is required but is missing."
+            ],
+            "type": "string"
+          },
+          "errors": {
+            "description": "Optional list of individual error details",
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "instance": {
+            "description": "A URI reference that identifies the specific occurrence of the problem.",
+            "examples": [
+              "https://example.com/error-log/abc123"
+            ],
+            "format": "uri",
+            "type": "string"
+          },
+          "status": {
+            "description": "HTTP status code",
+            "examples": [
+              400
+            ],
+            "format": "int64",
+            "type": "integer"
+          },
+          "title": {
+            "description": "A short, human-readable summary of the problem type. This value should not change between occurrences of the error.",
+            "examples": [
+              "Bad Request"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "default": "about:blank",
+            "description": "A URI reference to human-readable documentation for the error.",
+            "examples": [
+              "https://example.com/errors/example"
+            ],
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EvidenceSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "duration_ms": {
+            "description": "Primary elapsed duration in milliseconds when the response exposes one.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_refs": {
+            "description": "Input references detected from request fields such as object_id, structure_id, target_id, and sequence_id.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "object_refs": {
+            "description": "Object ids or object refs visible in the response/provenance.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "output_refs": {
+            "description": "Output references detected from response data and generated objects.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "row_count": {
+            "description": "Primary row count or returned row count when the response exposes one.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "warnings_count": {
+            "description": "Number of non-fatal warnings in the envelope.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "warnings_count"
+        ],
+        "type": "object"
+      },
+      "HomologyAffineMeasurements": {
+        "additionalProperties": false,
+        "properties": {
+          "normalized_score": {
+            "format": "double",
+            "type": "number"
+          },
+          "raw_score": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "raw_score",
+          "normalized_score"
+        ],
+        "type": "object"
+      },
+      "HomologyDatabase": {
+        "additionalProperties": false,
+        "properties": {
+          "default_release_alias": {
+            "type": "string"
+          },
+          "default_release_id": {
+            "description": "Immutable release currently selected by the default alias.",
+            "type": "string"
+          },
+          "description": {
+            "type": "string"
+          },
+          "display_name": {
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "id": {
+            "description": "Opaque database id used to enumerate immutable releases.",
+            "type": "string"
+          },
+          "molecule_type": {
+            "type": "string"
+          },
+          "object": {
+            "description": "Always homology_database.",
+            "type": "string"
+          },
+          "query_kinds": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "slug": {
+            "description": "Human-readable stable database slug.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "slug",
+          "display_name",
+          "molecule_type",
+          "query_kinds",
+          "evidence"
+        ],
+        "type": "object"
+      },
+      "HomologyDatabaseList": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyDatabase"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": "string"
+          },
+          "object": {
+            "description": "Always list.",
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "url",
+          "data",
+          "has_more"
+        ],
+        "type": "object"
+      },
+      "HomologyDatabaseRelease": {
+        "additionalProperties": false,
+        "properties": {
+          "aliases": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "compiler_version": {
+            "type": "string"
+          },
+          "corpus_snapshot_id": {
+            "description": "Immutable Tomato corpus snapshot selected by this release.",
+            "type": "string"
+          },
+          "created_at": {
+            "type": "string"
+          },
+          "database_id": {
+            "type": "string"
+          },
+          "homology_search_capability": {
+            "$ref": "#/components/schemas/HomologySearchCapability"
+          },
+          "id": {
+            "description": "Immutable dbr_ release id.",
+            "type": "string"
+          },
+          "manifest_sha256": {
+            "type": "string"
+          },
+          "object": {
+            "description": "Always homology_database_release.",
+            "type": "string"
+          },
+          "record_count": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "residue_count": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "status": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "database_id",
+          "status",
+          "created_at",
+          "aliases",
+          "record_count",
+          "residue_count",
+          "homology_search_capability",
+          "corpus_snapshot_id"
+        ],
+        "type": "object"
+      },
+      "HomologyDatabaseReleaseList": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyDatabaseRelease"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": "string"
+          },
+          "object": {
+            "description": "Always list.",
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "url",
+          "data",
+          "has_more"
+        ],
+        "type": "object"
+      },
+      "HomologyDocumentFilter": {
+        "additionalProperties": false,
+        "description": "Recursive metadata predicate defining the eligible target population. Field/operator compatibility and limits come from the immutable filter schema for the selected release. Missing fields use strong Kleene logic; only true records are eligible.",
+        "discriminator": {
+          "propertyName": "op"
+        },
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/HomologyFilterAnd"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterOr"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterNot"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterEq"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterIn"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterLt"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterLte"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterGt"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterGte"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterContains"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterContainsAny"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterContainsAll"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyFilterExists"
+          }
+        ],
+        "properties": {
+          "field": {
+            "maxLength": 256,
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/HomologyDocumentFilter"
+          },
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyDocumentFilter"
+            },
+            "maxItems": 256,
+            "minItems": 1,
+            "type": "array"
+          },
+          "op": {
+            "enum": [
+              "and",
+              "or",
+              "not",
+              "eq",
+              "in",
+              "lt",
+              "lte",
+              "gt",
+              "gte",
+              "contains",
+              "contains_any",
+              "contains_all",
+              "exists"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "oneOf": [
+              {
+                "maxLength": 16384,
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          },
+          "values": {
+            "items": {
+              "oneOf": [
+                {
+                  "maxLength": 16384,
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "maxItems": 4096,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "op"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterAnd": {
+        "additionalProperties": false,
+        "properties": {
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyDocumentFilter"
+            },
+            "maxItems": 256,
+            "minItems": 1,
+            "type": "array"
+          },
+          "op": {
+            "enum": [
+              "and"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "filters"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterContains": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 256,
+            "not": {
+              "enum": [
+                "id"
+              ]
+            },
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "contains"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "maxLength": 16384,
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "field",
+          "value"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterContainsAll": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 256,
+            "not": {
+              "enum": [
+                "id"
+              ]
+            },
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "contains_all"
+            ],
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "maxLength": 16384,
+              "type": "string"
+            },
+            "maxItems": 4096,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "op",
+          "field",
+          "values"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterContainsAny": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 256,
+            "not": {
+              "enum": [
+                "id"
+              ]
+            },
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "contains_any"
+            ],
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "maxLength": 16384,
+              "type": "string"
+            },
+            "maxItems": 4096,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "op",
+          "field",
+          "values"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterEq": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 256,
+            "not": {
+              "enum": [
+                "id"
+              ]
+            },
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "eq"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "oneOf": [
+              {
+                "maxLength": 16384,
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "boolean"
+              }
+            ]
+          }
+        },
+        "required": [
+          "op",
+          "field",
+          "value"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterExists": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 256,
+            "not": {
+              "enum": [
+                "id"
+              ]
+            },
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "exists"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "op",
+          "field",
+          "value"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterField": {
+        "additionalProperties": false,
+        "properties": {
+          "field_type": {
+            "enum": [
+              "string",
+              "integer",
+              "boolean",
+              "string_array"
+            ],
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "operators": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "name",
+          "field_type",
+          "operators"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterGt": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 256,
+            "not": {
+              "enum": [
+                "id"
+              ]
+            },
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "gt"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "op",
+          "field",
+          "value"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterGte": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 256,
+            "not": {
+              "enum": [
+                "id"
+              ]
+            },
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "gte"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "op",
+          "field",
+          "value"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterIn": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 256,
+            "not": {
+              "enum": [
+                "id"
+              ]
+            },
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "in"
+            ],
+            "type": "string"
+          },
+          "values": {
+            "items": {
+              "oneOf": [
+                {
+                  "maxLength": 16384,
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                },
+                {
+                  "type": "boolean"
+                }
+              ]
+            },
+            "maxItems": 4096,
+            "minItems": 1,
+            "type": "array"
+          }
+        },
+        "required": [
+          "op",
+          "field",
+          "values"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterLimits": {
+        "additionalProperties": false,
+        "properties": {
+          "maximum_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maximum_depth": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maximum_field_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maximum_nodes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maximum_scalar_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maximum_values": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "maximum_bytes",
+          "maximum_nodes",
+          "maximum_values",
+          "maximum_depth",
+          "maximum_field_bytes",
+          "maximum_scalar_bytes"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterLt": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 256,
+            "not": {
+              "enum": [
+                "id"
+              ]
+            },
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "lt"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "op",
+          "field",
+          "value"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterLte": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "maxLength": 256,
+            "not": {
+              "enum": [
+                "id"
+              ]
+            },
+            "pattern": "^[a-z0-9_]+$",
+            "type": "string"
+          },
+          "op": {
+            "enum": [
+              "lte"
+            ],
+            "type": "string"
+          },
+          "value": {
+            "type": "integer"
+          }
+        },
+        "required": [
+          "op",
+          "field",
+          "value"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterNot": {
+        "additionalProperties": false,
+        "properties": {
+          "filter": {
+            "$ref": "#/components/schemas/HomologyDocumentFilter"
+          },
+          "op": {
+            "enum": [
+              "not"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "filter"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterOr": {
+        "additionalProperties": false,
+        "properties": {
+          "filters": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyDocumentFilter"
+            },
+            "maxItems": 256,
+            "minItems": 1,
+            "type": "array"
+          },
+          "op": {
+            "enum": [
+              "or"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "op",
+          "filters"
+        ],
+        "type": "object"
+      },
+      "HomologyFilterSchema": {
+        "additionalProperties": false,
+        "properties": {
+          "database_release_id": {
+            "type": "string"
+          },
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyFilterField"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/HomologyFilterLimits"
+          },
+          "metadata_manifest_sha256": {
+            "type": "string"
+          },
+          "metadata_release_id": {
+            "type": "string"
+          },
+          "missing_field_semantics": {
+            "enum": [
+              "strong_kleene"
+            ],
+            "type": "string"
+          },
+          "object": {
+            "type": "string"
+          },
+          "search_policy_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "database_release_id",
+          "metadata_release_id",
+          "metadata_manifest_sha256",
+          "search_policy_ids",
+          "fields",
+          "missing_field_semantics",
+          "limits"
+        ],
+        "type": "object"
+      },
+      "HomologyInlineSearchTarget": {
+        "additionalProperties": false,
+        "properties": {
+          "database_release_id": {
+            "description": "Exact immutable Tomato release identity.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/HomologyDocumentFilter"
+          }
+        },
+        "required": [
+          "database_release_id"
+        ],
+        "type": "object"
+      },
+      "HomologyMaxSimMeasurements": {
+        "additionalProperties": false,
+        "properties": {
+          "bidirectional": {
+            "format": "double",
+            "type": "number"
+          },
+          "query_to_target": {
+            "format": "double",
+            "type": "number"
+          },
+          "target_to_query": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "query_to_target",
+          "target_to_query",
+          "bidirectional"
+        ],
+        "type": "object"
+      },
+      "HomologyPairwiseAlignment": {
+        "additionalProperties": false,
+        "properties": {
+          "aligned_residue_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "cigar": {
+            "type": "string"
+          },
+          "cigar_dialect": {
+            "type": "string"
+          },
+          "coordinate_system": {
+            "type": "string"
+          },
+          "gap_opening_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "gap_residue_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "identical_residue_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "query_coverage_ratio": {
+            "format": "double",
+            "type": "number"
+          },
+          "query_end": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "query_length": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "query_start": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "target_coverage_ratio": {
+            "format": "double",
+            "type": "number"
+          },
+          "target_end": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "target_length": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "target_start": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "coordinate_system",
+          "cigar_dialect",
+          "query_length",
+          "target_length",
+          "query_start",
+          "query_end",
+          "target_start",
+          "target_end",
+          "query_coverage_ratio",
+          "target_coverage_ratio",
+          "aligned_residue_count",
+          "identical_residue_count",
+          "gap_residue_count",
+          "gap_opening_count",
+          "cigar"
+        ],
+        "type": "object"
+      },
+      "HomologyQuery": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "description": "Query kind.",
+            "enum": [
+              "protein_sequence"
+            ],
+            "type": "string"
+          },
+          "sequence": {
+            "description": "Raw amino-acid sequence text.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "sequence"
+        ],
+        "type": "object"
+      },
+      "HomologyReusableTargetSpace": {
+        "additionalProperties": false,
+        "properties": {
+          "calibration_id": {
+            "description": "Optional qualified calibration bound to this target space.",
+            "pattern": "^cal_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "target_space_id": {
+            "description": "Opaque immutable reusable target-space identity.",
+            "pattern": "^htsp_[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "target_space_id"
+        ],
+        "type": "object"
+      },
+      "HomologySearch": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "failure": {
+            "$ref": "#/components/schemas/HomologySearchFailure"
+          },
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string"
+          },
+          "policy_id": {
+            "type": "string"
+          },
+          "query": {
+            "$ref": "#/components/schemas/HomologySearchQuerySummary"
+          },
+          "receipt": {
+            "$ref": "#/components/schemas/HomologySearchReceipt"
+          },
+          "result_set": {
+            "$ref": "#/components/schemas/HomologySearchResultSet"
+          },
+          "results": {
+            "$ref": "#/components/schemas/HomologySearchResultsRequest"
+          },
+          "specification_sha256": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "failed"
+            ],
+            "type": "string"
+          },
+          "target_space": {
+            "$ref": "#/components/schemas/HomologySearchTargetSpace",
+            "description": "Authoritative searched target population. For filtered async searches this is absent until Tomato has compiled immutable eligibility."
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "created_at",
+          "status",
+          "query",
+          "policy_id",
+          "results",
+          "specification_sha256",
+          "receipt",
+          "warnings"
+        ],
+        "type": "object"
+      },
+      "HomologySearchCapability": {
+        "additionalProperties": false,
+        "properties": {
+          "default_search_policy_id": {
+            "type": "string"
+          },
+          "evidence": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "filter_schema": {
+            "$ref": "#/components/schemas/HomologyFilterSchema"
+          },
+          "query_kinds": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "search_policy_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "status": {
+            "enum": [
+              "available",
+              "unavailable"
+            ],
+            "type": "string"
+          },
+          "unavailable_reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "query_kinds",
+          "search_policy_ids",
+          "evidence"
+        ],
+        "type": "object"
+      },
+      "HomologySearchConstraints": {
+        "additionalProperties": false,
+        "properties": {
+          "deadline_ms": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "max_billable_units": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "HomologySearchFailure": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "is_retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "detail",
+          "is_retryable"
+        ],
+        "type": "object"
+      },
+      "HomologySearchList": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/HomologySearch"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "url",
+          "data",
+          "has_more"
+        ],
+        "type": "object"
+      },
+      "HomologySearchPolicySelector": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "Exact immutable Tomato search-policy identity. Omit to use the release's recorded default policy.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "HomologySearchQuerySummary": {
+        "additionalProperties": false,
+        "properties": {
+          "kind": {
+            "type": "string"
+          },
+          "normalization_id": {
+            "type": "string"
+          },
+          "normalized_length": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "retention": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "kind",
+          "normalized_length",
+          "normalization_id",
+          "sha256",
+          "retention"
+        ],
+        "type": "object"
+      },
+      "HomologySearchReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "calibration_id": {
+            "type": "string"
+          },
+          "canonical_filter_sha256": {
+            "type": "string"
+          },
+          "corpus_snapshot_id": {
+            "type": "string"
+          },
+          "database_release_id": {
+            "type": "string"
+          },
+          "engine": {
+            "type": "string"
+          },
+          "filter_schema_id": {
+            "type": "string"
+          },
+          "is_deterministic": {
+            "type": "boolean"
+          },
+          "is_exhaustive": {
+            "type": "boolean"
+          },
+          "is_policy_complete": {
+            "type": "boolean"
+          },
+          "job_id": {
+            "type": "string"
+          },
+          "query_compilation_id": {
+            "type": "string"
+          },
+          "search_policy_id": {
+            "type": "string"
+          },
+          "semantic_profile_id": {
+            "type": "string"
+          },
+          "submission_id": {
+            "type": "string"
+          },
+          "target_space_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "engine",
+          "database_release_id",
+          "corpus_snapshot_id",
+          "semantic_profile_id",
+          "search_policy_id",
+          "is_policy_complete",
+          "is_exhaustive",
+          "is_deterministic"
+        ],
+        "type": "object"
+      },
+      "HomologySearchResult": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence": {
+            "$ref": "#/components/schemas/HomologySearchResultEvidence"
+          },
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string"
+          },
+          "rank": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "target": {
+            "$ref": "#/components/schemas/HomologySearchResultTarget"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "rank",
+          "target",
+          "evidence"
+        ],
+        "type": "object"
+      },
+      "HomologySearchResultEvidence": {
+        "additionalProperties": false,
+        "properties": {
+          "affine": {
+            "$ref": "#/components/schemas/HomologyAffineMeasurements"
+          },
+          "alignment": {
+            "$ref": "#/components/schemas/HomologyPairwiseAlignment"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "maxsim": {
+            "$ref": "#/components/schemas/HomologyMaxSimMeasurements"
+          },
+          "object": {
+            "type": "string"
+          },
+          "significance": {
+            "$ref": "#/components/schemas/HomologySignificanceMeasurements"
+          }
+        },
+        "required": [
+          "object",
+          "kind",
+          "maxsim"
+        ],
+        "type": "object"
+      },
+      "HomologySearchResultList": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/HomologySearchResult"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": "string"
+          },
+          "object": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "url",
+          "data",
+          "has_more"
+        ],
+        "type": "object"
+      },
+      "HomologySearchResultSet": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_result_id": {
+            "type": "string"
+          },
+          "count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "is_result_limit_reached": {
+            "type": "boolean"
+          },
+          "object": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "url",
+          "count",
+          "sha256",
+          "canonical_result_id",
+          "is_result_limit_reached"
+        ],
+        "type": "object"
+      },
+      "HomologySearchResultTarget": {
+        "additionalProperties": false,
+        "properties": {
+          "database_release_id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "record_id": {
+            "type": "string"
+          },
+          "target_ordinal": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "record_id",
+          "database_release_id",
+          "target_ordinal"
+        ],
+        "type": "object"
+      },
+      "HomologySearchResultsRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "evidence": {
+            "enum": [
+              "candidate_measurement",
+              "pairwise_sequence_alignment"
+            ],
+            "type": "string"
+          },
+          "max_results": {
+            "format": "int64",
+            "maximum": 10000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "significance_requirement": {
+            "default": "not_requested",
+            "enum": [
+              "not_requested",
+              "if_available",
+              "required"
+            ],
+            "type": "string"
+          },
+          "unit": {
+            "default": "target",
+            "enum": [
+              "target"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "unit",
+          "evidence",
+          "max_results",
+          "significance_requirement"
+        ],
+        "type": "object"
+      },
+      "HomologySearchTarget": {
+        "description": "Exact target population, expressed either inline or by immutable reusable identity.",
+        "oneOf": [
+          {
+            "$ref": "#/components/schemas/HomologyInlineSearchTarget"
+          },
+          {
+            "$ref": "#/components/schemas/HomologyReusableTargetSpace"
+          }
+        ]
+      },
+      "HomologySearchTargetSpace": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_filter_sha256": {
+            "type": "string"
+          },
+          "eligible_record_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "eligible_residue_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "filter_schema_id": {
+            "type": "string"
+          },
+          "id": {
+            "description": "Opaque immutable identity of the exact target population searched.",
+            "type": "string"
+          },
+          "is_filtered": {
+            "type": "boolean"
+          },
+          "total_record_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "unknown_record_count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "is_filtered",
+          "total_record_count",
+          "eligible_record_count",
+          "eligible_residue_count",
+          "unknown_record_count"
+        ],
+        "type": "object"
+      },
+      "HomologySignificanceMeasurements": {
+        "additionalProperties": false,
+        "properties": {
+          "calibration_bin": {
+            "type": "string"
+          },
+          "calibration_id": {
+            "type": "string"
+          },
+          "calibration_sample_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "expected_false_hits": {
+            "format": "double",
+            "type": "number"
+          },
+          "family_wise_exceedance_probability": {
+            "format": "double",
+            "type": "number"
+          },
+          "minimum_resolvable_probability": {
+            "format": "double",
+            "type": "number"
+          },
+          "pair_tail_probability": {
+            "format": "double",
+            "type": "number"
+          },
+          "q_value": {
+            "format": "double",
+            "type": "number"
+          },
+          "support_status": {
+            "enum": [
+              "supported_empirical",
+              "supported_tail_model",
+              "insufficient_tail_resolution",
+              "out_of_support",
+              "missing_calibration"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "calibration_sample_count",
+          "support_status",
+          "calibration_id"
+        ],
+        "type": "object"
+      },
+      "HomologyTargetSpace": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_filter_sha256": {
+            "type": "string"
+          },
+          "corpus_snapshot_id": {
+            "type": "string"
+          },
+          "database_release_id": {
+            "type": "string"
+          },
+          "eligibility_authority_id": {
+            "type": "string"
+          },
+          "eligible_record_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "eligible_residue_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/HomologyDocumentFilter"
+          },
+          "filter_schema_id": {
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^htsp_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "homology_target_space"
+            ],
+            "type": "string"
+          },
+          "search_policy_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "semantic_profile_id": {
+            "type": "string"
+          },
+          "target_space_authority_id": {
+            "type": "string"
+          },
+          "total_record_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "unknown_record_count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "database_release_id",
+          "corpus_snapshot_id",
+          "semantic_profile_id",
+          "filter_schema_id",
+          "filter",
+          "canonical_filter_sha256",
+          "total_record_count",
+          "eligible_record_count",
+          "eligible_residue_count",
+          "unknown_record_count",
+          "eligibility_authority_id",
+          "target_space_authority_id",
+          "search_policy_ids"
+        ],
+        "type": "object"
+      },
+      "HomologyTargetSpaceCompilation": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_filter_sha256": {
+            "type": "string"
+          },
+          "database_release_id": {
+            "type": "string"
+          },
+          "filter_schema_id": {
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^htspc_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "homology_target_space_compilation"
+            ],
+            "type": "string"
+          },
+          "semantic_profile_id": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "pending",
+              "complete"
+            ],
+            "type": "string"
+          },
+          "target_space_id": {
+            "pattern": "^htsp_[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "status",
+          "database_release_id",
+          "semantic_profile_id",
+          "filter_schema_id",
+          "canonical_filter_sha256"
+        ],
+        "type": "object"
+      },
+      "Provenance": {
+        "additionalProperties": false,
+        "properties": {
+          "cache_hit": {
+            "description": "Whether cached output was reused.",
+            "type": "boolean"
+          },
+          "created_at": {
+            "description": "UTC timestamp.",
+            "type": "string"
+          },
+          "database_snapshots": {
+            "description": "Database snapshots used.",
+            "items": {
+              "$ref": "#/components/schemas/DatabaseSnapshot"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "generated_object_ids": {
+            "description": "Object ids created by the operation.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "input_hash": {
+            "description": "SHA-256 hash of canonical request input.",
+            "type": "string"
+          },
+          "operation": {
+            "description": "Primitive operation id.",
+            "type": "string"
+          },
+          "parameters_hash": {
+            "description": "SHA-256 hash of parameters.",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "Unique request identifier.",
+            "type": "string"
+          },
+          "server_version": {
+            "description": "Server version.",
+            "type": "string"
+          },
+          "tool_versions": {
+            "description": "Tool versions used.",
+            "items": {
+              "$ref": "#/components/schemas/ToolVersion"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "request_id",
+          "operation",
+          "created_at",
+          "server_version"
+        ],
+        "type": "object"
+      },
+      "ToolVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "version"
+        ],
+        "type": "object"
+      },
+      "Warning": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "description": "Stable warning code.",
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": {},
+            "description": "Additional structured warning details.",
+            "type": "object"
+          },
+          "message": {
+            "description": "Human-readable warning message.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "description": "A Rafflesia API key, sent as `Authorization: Bearer \u003ckey\u003e`.",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "description": "Deterministic biological evidence primitives. Every response is the same envelope: ok, data, warnings, provenance.",
+    "title": "Rafflesia API",
+    "version": "0.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/v1/homology": {
+      "get": {
+        "operationId": "homology_list",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologySearchList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List retained homology searches",
+        "tags": [
+          "Homology"
+        ]
+      },
+      "post": {
+        "description": "Creates one durable search from scientific intent. Without Prefer, the server waits up to 2 seconds. Prefer: respond-async returns after durable acceptance; Prefer: wait=N waits up to N seconds. Returns 201 when terminal within that window and 202 otherwise. Transport preference never changes scientific execution.",
+        "operationId": "homology_create",
+        "parameters": [
+          {
+            "description": "Retry identity for this semantic request. Reuse it after ambiguous failures.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "Retry identity for this semantic request. Reuse it after ambiguous failures.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Transport wait policy: respond-async, wait=N (0–60 seconds), or wait=N with respond-async fallback.",
+            "in": "header",
+            "name": "Prefer",
+            "schema": {
+              "description": "Transport wait policy: respond-async, wait=N (0–60 seconds), or wait=N with respond-async fallback.",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHomologySearchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologySearch"
+                }
+              }
+            },
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologySearch"
+                }
+              }
+            },
+            "description": "Accepted",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create a retained homology search",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/{homology_search_id}": {
+      "get": {
+        "description": "Returns current status, immutable release and policy receipts, and the result-set summary. Supports conditional polling with If-None-Match.",
+        "operationId": "homology_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "homology_search_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Previously observed strong ETag. A matching representation returns 304.",
+            "in": "header",
+            "name": "If-None-Match",
+            "schema": {
+              "description": "Previously observed strong ETag. A matching representation returns 304.",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologySearch"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Retrieve a retained homology search",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/{homology_search_id}/results": {
+      "get": {
+        "description": "Pages the stable ranked results of a completed homology search. Each result carries typed measurements and provenance.",
+        "operationId": "homology_results",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "homology_search_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 100,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologySearchResultList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List immutable homology results",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/{homology_search_id}/results.csv": {
+      "get": {
+        "operationId": "homology_results_export_csv",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "homology_search_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "description": "Previously observed strong ETag. A matching representation returns 304.",
+            "in": "header",
+            "name": "If-None-Match",
+            "schema": {
+              "description": "Previously observed strong ETag. A matching representation returns 304.",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/csv": {
+                "schema": {
+                  "contentMediaType": "application/octet-stream",
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Content-addressed CSV containing every immutable result and typed measurement.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-SHA256": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Object-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Export all immutable homology results as CSV",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology_databases": {
+      "get": {
+        "operationId": "homology_databases_list",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyDatabaseList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Homology databases list",
+        "tags": [
+          "Homology databases"
+        ]
+      }
+    },
+    "/v1/homology_databases/{database_id}/releases": {
+      "get": {
+        "operationId": "homology_database_releases_list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "database_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyDatabaseReleaseList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Homology database releases list",
+        "tags": [
+          "Homology databases"
+        ]
+      }
+    },
+    "/v1/homology_releases/{database_release_id}/filter_schema": {
+      "get": {
+        "operationId": "homology_filter_schemas_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "database_release_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyFilterSchema"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Homology filter schemas get",
+        "tags": [
+          "Homology releases"
+        ]
+      }
+    },
+    "/v1/homology_target_space_compilations": {
+      "post": {
+        "description": "Compiles a release-bound metadata filter into reusable immutable eligibility. Equal canonical inputs identify the same target space.",
+        "operationId": "homology_target_space_compilations_create",
+        "parameters": [
+          {
+            "description": "Retry identity for this semantic compilation request.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "Retry identity for this semantic compilation request.",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHomologyTargetSpaceCompilationRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpaceCompilation"
+                }
+              }
+            },
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpaceCompilation"
+                }
+              }
+            },
+            "description": "Accepted",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Compile an immutable homology target space",
+        "tags": [
+          "Homology target space compilations"
+        ]
+      }
+    },
+    "/v1/homology_target_space_compilations/{homology_target_space_compilation_id}": {
+      "get": {
+        "operationId": "homology_target_space_compilations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "homology_target_space_compilation_id",
+            "required": true,
+            "schema": {
+              "pattern": "^htspc_[0-9a-f]{64}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpaceCompilation"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Retrieve target-space compilation status",
+        "tags": [
+          "Homology target space compilations"
+        ]
+      }
+    },
+    "/v1/homology_target_spaces/{homology_target_space_id}": {
+      "get": {
+        "operationId": "homology_target_spaces_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "homology_target_space_id",
+            "required": true,
+            "schema": {
+              "pattern": "^htsp_[0-9a-f]{64}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Retrieve an immutable reusable homology target space",
+        "tags": [
+          "Homology target spaces"
+        ]
+      }
+    }
+  },
+  "security": [
+    {
+      "bearerAuth": []
+    }
+  ],
+  "servers": [
+    {
+      "description": "Production",
+      "url": "https://api.rafflesia.ai"
+    }
+  ]
+}

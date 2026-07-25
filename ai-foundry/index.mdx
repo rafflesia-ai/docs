@@ -1,0 +1,46 @@
+---
+title: AI Foundry
+description: One typed API for open biological models — structure prediction, protein design, embeddings, and variant effects.
+---
+
+**AI Foundry** puts open-source biological models behind one uniform REST
+surface — `/v1/foundry/models/…`. Rafflesia owns the public resource,
+content-addressed result storage, metering, and provenance; heavy inference runs
+on external GPUs. Every result is addressed by object id and every call is
+recorded against an explicit model release.
+
+## Workloads
+
+Browse the catalog with `GET /v1/foundry/models` (filter by `?workload=`), then
+call the endpoint for that workload:
+
+<Columns cols={2}>
+  <Card
+    title="Structure prediction">
+    POST …/predictions — durable jobs. Boltz-2, Chai-1, Protenix, AlphaFold2, RoseTTAFold3, ESMFold2.
+  </Card>
+  <Card
+    title="Embeddings">
+    POST …/embeddings — sync. Protein (ESM C, ESM-2), DNA (Evo 2, HyenaDNA, Caduceus), RNA (RNA-FM), and 3Di (SaProt, ProstT5).
+  </Card>
+  <Card
+    title="Protein design">
+    POST …/designs — sync. Sample sequences on a fixed backbone with ProteinMPNN and LigandMPNN.
+  </Card>
+  <Card
+    title="Variant effects">
+    POST …/variant-effects — sync. Substitution log-likelihood ratios from the ESM-1v ensemble.
+  </Card>
+</Columns>
+
+## How a call works
+
+- **Structure prediction is a durable job.** `POST …/predictions` returns a
+  `job_id`; you poll it, and the result surfaces as a content-addressed
+  structure object. Everything else — embeddings, designs, variant effects —
+  returns inline.
+- **Results are objects.** Structures in and out are `ObjectRef`s
+  (`object_id`, `uri`, `sha256`), so downstream work is reproducible.
+- **Calls are safe to retry.** Every `POST` accepts an `Idempotency-Key`.
+- **Releases are explicit.** Each call names a `model_release`, and the provider
+  must echo the exact release that produced the result.

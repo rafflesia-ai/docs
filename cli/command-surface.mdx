@@ -1,0 +1,71 @@
+---
+title: Command surface
+description: Every rafflesia namespace, what it covers, and how to discover the full command tree without reading a list.
+---
+
+The command tree is discoverable from the CLI itself, which is the only listing
+guaranteed to match the binary you have installed:
+
+```bash
+rafflesia --help
+rafflesia proteins --help
+rafflesia commands manifest --json
+rafflesia commands namespaces --json
+```
+
+`commands manifest` returns the machine-readable registry — every primitive, its
+operation id, and its request contract. It is the right input for an agent that
+needs to plan against the surface rather than hard-code it.
+
+## Evidence namespaces
+
+| Namespace | Covers |
+| --- | --- |
+| `refs` | Resolve an identifier or free-text query into typed reference candidates. |
+| `sequences` | Records, catalogs, alignments, MSAs, profiles, and release search. |
+| `proteins` | Structures, confidence, regions, residues, pockets, folds, interfaces, ligands, metals, disulfides, secondary structure, complexes, variants, dynamics, and validation. |
+| `genomes` | Assemblies, regions, intervals, and genome-coordinate variants. |
+| `annotations` | Source annotation fetches and annotation mappings. |
+| `molecules` | Import, inspect, fingerprints, descriptors, normalization, and similarity search. |
+| `maps` | Cryo-EM map metadata. |
+| `simulations` | Simulation evidence. |
+
+## Query and semantics
+
+| Namespace | Covers |
+| --- | --- |
+| `query run` / `explain` / `export` | Release-pinned read-only SQL, preflight, and bounded exports. |
+| `query databases` / `releases` / `sources` | Discover logical databases, immutable releases, and the relations each exposes. |
+| `query ontology` | Inspect and compose the immutable relation ontology, including paths and context slices. |
+| `query joins` / `join-*` | Declared joins plus the measured evidence that authorizes a specific release pair. |
+| `query bql` | Compile and type-check Biology Query Language modules against the ontology. |
+| `query contract` | The pinned portable SQL dialect, limits, functions, and calibrated budgets. |
+
+## Models, releases, and evaluation
+
+| Namespace | Covers |
+| --- | --- |
+| `repositories` | Model, dataset, and ontology repositories with their latest published releases. |
+| `registry` | Immutable registry releases, reconciliation receipts, and rebuild-drill evidence. |
+| `datasets` | Dataset fan-out, source snapshots, and release history. |
+| `environments` | Immutable evaluation environments, releases, and tasks. |
+| `episodes` / `rollout-groups` | Create, inspect, and group evaluation episodes; read their events and artifacts. |
+
+## Execution and storage
+
+| Namespace | Covers |
+| --- | --- |
+| `jobs` | Durable job submission and inspection. |
+| `objects` | Content-addressed object primitives. |
+| `artifacts` / `object-artifacts` | Paper artifact manifests and the object-backed artifact cache. |
+| `cache` | Cache measurement, admission, warming, and eviction. |
+| `audit` | API audit log reads. |
+| `system` | Build info, health, and infrastructure request records. |
+| `commands` | Command introspection: the manifest and namespace listing. |
+| `auth` | Login, logout, credential status. See [Authentication](/cli/authentication). |
+
+<Note>
+  Namespaces are stable; individual subcommands are added as primitives ship.
+  When a script needs to assert the surface it depends on, pin against
+  `rafflesia commands manifest --json` rather than a documentation table.
+</Note>

@@ -1,0 +1,32 @@
+---
+title: Architecture
+description: Compile once into immutable releases; serve stateless byte-range reads over object storage.
+---
+
+The engine splits the work in two: a heavy, offline **release compiler** and a
+small, stateless **query executor**. Compile a corpus once; serve cheap,
+reproducible computations many times.
+
+## Immutable releases
+
+A corpus is compiled into an immutable, content-addressed release. Every object
+in it is referenced by URI, version, and SHA-256, so a
+release is a fixed set of bytes that can never change underneath a query. A
+mutable alias (like `stable`) points at one release; publishing swaps the
+pointer atomically. The object bucket — not a database — is the source of truth.
+
+## Byte-range reads
+
+Object storage (GCS, S3, or Azure Blob) is the authoritative index. To answer a
+query the engine opens a small metadata footer, prunes down to the relevant
+shards, and then range-reads only the posting and payload bytes it actually
+needs. Cost scales with the query, not the corpus.
+
+## The query path
+
+Candidate generation and verification run in a purpose-built engine; it does not
+shell out to BLAST, MMseqs2, or Foldseek. A query seeds tokens, fetches
+the matching posting ranges, aggregates candidates, then verifies survivors with
+an exact **Smith-Waterman** alignment (`BLOSUM62`, affine gaps). The result
+carries typed measurements plus the release, snapshot, and engine versions that
+produced it.

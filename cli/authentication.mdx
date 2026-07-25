@@ -1,0 +1,83 @@
+---
+title: Authentication
+description: Interactive login, API keys, and how the CLI decides which server a credential is sent to.
+---
+
+Rafflesia accepts one credential type on the wire: a bearer token in the
+`Authorization` header. That token is either an **API key** (for scripts, agents,
+and CI) or a **session credential** minted by interactive login.
+
+```http
+Authorization: Bearer sk_production_…
+```
+
+## Interactive login
+
+```bash
+rafflesia auth login --server https://api.rafflesia.ai
+```
+
+This opens AuthKit in a browser, completes the exchange on a loopback callback,
+and stores the credential locally. Useful flags:
+
+| Flag | Purpose |
+| --- | --- |
+| `--no-open` | Print the authorization URL instead of opening a browser (headless hosts, remote shells). |
+| `--callback-port <n>` | Pin the loopback callback port; `0` picks a free one. |
+| `--login-hint <email>` | Pre-fill the email. |
+| `--organization-id <id>` | Request a session scoped to a specific organization. |
+| `--connection-id <id>` | Request a specific SSO connection. |
+
+Check and clear it with:
+
+```bash
+rafflesia auth status
+rafflesia auth logout
+```
+
+## API keys
+
+Create keys in the [dashboard](https://dashboard.rafflesia.ai). A key looks like
+`sk_<environment>_<secret>` — the environment slug is part of the prefix, so a
+staging key is visibly not a production key. The secret is shown once at
+creation; only its prefix and hash are stored.
+
+```bash
+export RAFFLESIA_API_BASE_URL=https://api.rafflesia.ai
+export RAFFLESIA_API_KEY=sk_production_…
+rafflesia auth status
+```
+
+Or per invocation:
+
+```bash
+rafflesia refs resolve BRCA1 --server https://api.rafflesia.ai --api-key sk_production_…
+```
+
+<Warning>
+  Prefer `RAFFLESIA_API_KEY` over `--api-key` in shared environments — a flag
+  value lands in your shell history and in process listings.
+</Warning>
+
+## Which server gets the credential
+
+`auth login` records the server it authenticated against, so a credential minted
+for one server is never replayed against another. Resolution order:
+
+1. `--server`
+2. `RAFFLESIA_API_BASE_URL`
+3. the server recorded by `auth login`
+4. `http://127.0.0.1:8081` — a **local development engine**
+
+<Note>
+  Step 4 is the reason a "why is my data empty?" session usually ends with a
+  forgotten `--server`. If you are talking to the hosted API, set
+  `RAFFLESIA_API_BASE_URL=https://api.rafflesia.ai` once in your shell profile.
+</Note>
+
+## Organization scope
+
+Sessions are scoped to an organization. A credential without an organization can
+authenticate but will be refused on organization-scoped resources — that is a
+scope problem, not a bad key. `rafflesia auth status` shows the active
+credential and the scope it carries.

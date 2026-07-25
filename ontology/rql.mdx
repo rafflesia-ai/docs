@@ -1,0 +1,519 @@
+---
+title: RQL recipes
+description: Small, readable .rql files that pin one evidence question and compile to portable, reproducible SQL.
+---
+
+An **RQL recipe** is a single `.rql` file that pins exactly one evidence
+question. It imports the [relations](/ontology/relations) it needs,
+declares a typed [join tree](/ontology/joins), and selects what to
+group by and what to measure. It compiles to portable SQL, and because it runs
+against a specific ontology it is reproducible down to the ontology digest.
+
+If the earlier pages are the vocabulary, RQL is the sentence.
+
+## Anatomy of a recipe
+
+Here is a complete recipe. Every field is covered below.
+
+```yaml
+rql_version: rafflesia_rql_2026_07_17
+name: high_confidence_pockets
+version: "1.0.0"
+description: High-confidence predicted binding pockets.
+domain: scientific_corpus
+
+imports:
+  - name: pocket_features
+    relation: pocket_features
+  - name: structure_summary
+    relation: structure_summary
+
+from: pocket_features
+
+joins:
+  - left_source: pocket_features
+    right_source: structure_summary
+    type: inner
+
+dimensions:
+  - name: pocket_volume
+    source: pocket_features
+    column: volume_angstrom3
+    alias: volume_angstrom3
+    description: Recorded pocket volume.
+  - name: local_confidence
+    source: pocket_features
+    column: mean_local_plddt
+    alias: mean_local_plddt
+    description: Mean local pLDDT around the pocket.
+  - name: structure_confidence
+    source: structure_summary
+    column: mean_plddt
+    alias: structure_mean_plddt
+    description: Mean pLDDT for the complete structure.
+
+parameters:
+  - name: min_local_plddt
+    type: number
+    description: Minimum local pLDDT retained.
+    default: 70
+
+filters:
+  - source: pocket_features
+    column: mean_local_plddt
+    operator: gte
+    parameter: min_local_plddt
+
+strict_joins: false
+
+order_by:
+  - alias: mean_local_plddt
+    direction: desc
+  - alias: volume_angstrom3
+    direction: desc
+
+quality_notes:
+  - Outputs are measurements from explicitly pinned relations; biological interpretation remains with the caller.
+```
+
+### `rql_version`, `name`, `version`, `domain`
+
+The envelope. `rql_version` pins the recipe grammar; `name` and `version`
+identify the recipe; `domain` scopes it to a corpus (e.g. `scientific_corpus`).
+The recipe answers exactly one question, so these stay stable as the corpus
+underneath is re-released.
+
+### `imports` and `from`
+
+`imports` lists the [relations](/ontology/relations) the recipe
+uses; `from` names the one it starts from. Everything else is reached through
+the join tree.
+
+### `joins`
+
+The typed [join tree](/ontology/joins). Each edge names a
+`left_source`, a `right_source`, and a `type` (`inner` or `left`). Identities are
+checked against the shared schema before any row is read.
+
+An optional `on` list adds typed refinements to the ontology relationship. It
+cannot replace that relationship's identity key. Lists are implicit `all`
+groups; nested `all`, `any`, and `not` nodes make precedence explicit.
+
+Safe optional joins may set `activation: when_referenced`. The compiler prunes
+one only when it is a `left` join, the ontology declares it `one_to_one` or
+`many_to_one`, and no selected field, aggregate predicate, caller filter, or
+ordering term needs its right source. Inner and fanout joins are never
+conditionally pruned.
+
+```yaml
+joins:
+  - left_source: interface_features
+    right_source: confidence_regions
+    type: left
+    on:
+      - any:
+          - source: interface_features
+            column: chain_a_id
+            operator: eq
+            compare_source: confidence_regions
+            compare_column: chain_id
+          - source: interface_features
+            column: chain_b_id
+            operator: eq
+            compare_source: confidence_regions
+            compare_column: chain_id
+```
+
+### `dimensions`
+
+The columns to group by — the axes of the result. Each names a `source`
+relation and a `column`, with an optional `alias` when two sources expose the
+same column name.
+
+```yaml
+dimensions:
+  - name: chain_a
+    source: interface_features
+    column: chain_a_id
+    description: First interface chain.
+  - name: chain_b
+    source: interface_features
+    column: chain_b_id
+    description: Second interface chain.
+```
+
+### `measurements`
+
+The aggregations — the numbers the recipe computes over each group. Each names a
+`function`, a `source`, a `column`, and an `alias`.
+
+```yaml
+measurements:
+  - name: contact_rows
+    function: count
+    source: interface_contacts
+    column: distance_angstrom
+    alias: contact_rows
+    description: Number of materialized contact rows.
+  - name: ligand_count
+    function: count_distinct
+    source: ligand_neighbors
+    column: ligand_id
+    alias: ligand_count
+    description: Number of distinct ligand identifiers.
+```
+
+Two closed measurement forms cover common cases without admitting arbitrary SQL:
+
+```yaml
+measurements:
+  - name: mapped_chain_count
+    function: count_distinct
+    source: mappings
+    fields:
+      - { source: mappings, column: pdb_id }
+      - { source: mappings, column: chain_id }
+    alias: mapped_chain_count
+    description: Distinct PDB-entry and chain-identifier pairs.
+  - name: pdb_mapping_count
+    function: count_if
+    source: mappings
+    where:
+      - source: mappings
+        column: structure_source
+        operator: eq
+        value: pdb
+    alias: pdb_mapping_count
+    description: Mappings whose recorded source is PDB.
+```
+
+A recipe with `dimensions` but no `measurements` is a projection (row-per-match);
+add `measurements` to roll those rows up per group.
+
+Every aggregate supports a typed `where` list. Counts return zero for no
+matching input; the other aggregates retain SQL null-on-empty semantics. An
+optional `input_grain` lists the measurement source's complete ontology primary
+key. When present, compilation rejects a join plan that could multiply that key,
+except for a `count_distinct` over the same key.
+
+`having` applies the same closed predicate shape to measurement names after
+aggregation. It cannot name source columns or contain an aggregate expression.
+
+```yaml
+measurements:
+  - name: complete_mapping_count
+    function: count
+    source: mappings
+    column: "*"
+    where:
+      - {
+          source: mappings,
+          column: is_range_complete,
+          operator: eq,
+          value: true,
+        }
+    input_grain:
+      - { source: mappings, column: dataset_name }
+      - { source: mappings, column: dataset_version }
+      # ...the remaining ontology primary-key columns...
+    alias: complete_mapping_count
+    description: Range-complete mapping rows.
+having:
+  - measurement: complete_mapping_count
+    operator: gt
+    parameter: minimum_mapping_count
+```
+
+### `parameters` and `filters`
+
+`parameters` declares typed inputs with defaults, so one recipe covers a family
+of thresholds without editing the file. `allowed_values`, `minimum`, and
+`maximum` close the caller contract further. When a filter targets an ontology
+column, RQL validates its type and unit and inherits declared ontology units or
+allowed values when the parameter omits them.
+
+Scalar types include `date` (`YYYY-MM-DD`) and `timestamp` (RFC 3339 with an
+explicit timezone), with corresponding list types. Lists can declare
+`minimum_items`, `maximum_items`, and `unique`; timestamps can require any
+timezone or UTC specifically.
+
+`filters` restrict rows using a `source`, `column`, `operator` (e.g. `gte`), and
+a literal, literal list, parameter, or compared ontology column. The outer list
+is an implicit `all`; use nested `all`, `any`, and `not` for boolean composition.
+
+```yaml
+parameters:
+  - name: min_local_plddt
+    type: number
+    description: Minimum local pLDDT retained.
+    minimum: 0
+    maximum: 100
+    default: 70
+filters:
+  - all:
+      - source: pocket_features
+        column: mean_local_plddt
+        operator: gte
+        parameter: min_local_plddt
+      - not:
+          source: pocket_features
+          column: method
+          operator: eq
+          value: unsupported
+```
+
+`parameter_guards` rejects invalid combinations before SQL compilation. A
+`requires` guard has one trigger and one or more dependencies;
+`mutually_exclusive` allows at most one named parameter; `exactly_one_of`
+requires one.
+
+The additional closed guards are `requires_when` (a dependency triggered by a
+typed comparison), `at_least_one_of`, and `compare` (two parameters compared by
+`eq`, `ne`, `gt`, `gte`, `lt`, or `lte`).
+
+```yaml
+parameter_guards:
+  - kind: requires
+    parameter: start_position
+    parameters: [end_position]
+    message: end_position is required with start_position
+  - kind: exactly_one_of
+    parameters: [structure_id, target_id]
+    message: supply exactly one structure identity
+```
+
+### Governed caller filters and relationship existence
+
+`filterables` is the only way a caller can add a predicate. The module owns each
+name's source, column, and allowed operators; a compilation request supplies a
+boolean tree of filterable names and typed values. Callers cannot introduce an
+identifier or expression.
+
+`exists` and `not_exists` test an imported relationship without adding its rows
+to the result grain. The compiler obtains every correlation key from the
+ontology and lowers the node to a correlated `EXISTS`/`NOT EXISTS` subquery.
+An optional `where` can refine the two declared sources but cannot replace the
+ontology identity.
+
+```yaml
+filterables:
+  - name: structure_source
+    source: mappings
+    column: structure_source
+    operators: [eq, in]
+    description: Governed structure-provider filter.
+filters:
+  - exists:
+      left_source: mappings
+      right_source: records
+```
+
+### Biological evidence relationships
+
+Ontology joins express exact identity or source-defined key mappings. Biology
+usually asks a different question: whether a measured pair satisfies explicit
+criteria for a similarity candidate, or whether a named provider asserted an
+evolutionary relationship. RQL keeps those meanings separate with the closed
+`evidence_relationships` construct.
+
+The only supported kinds are `sequence_similarity`, `structure_similarity`,
+and `evolutionary_assertion`. Similarity kinds must have `status: candidate`
+and at least one numeric biological cutoff; `rank` alone is rejected.
+Evolutionary assertions must have `status: asserted` and remain facts copied
+from their provider. Every criterion comes from one declared evidence source,
+and every parameterized cutoff must be required or have a default so it cannot
+silently disappear at execution time.
+
+```yaml
+evidence_relationships:
+  - name: sequence_similarity_candidate
+    kind: sequence_similarity
+    status: candidate
+    evidence_source: hits
+    subject: { source: hits, column: query_id }
+    object: { source: hits, column: target_record_id }
+    method: { source: hits, column: backend }
+    criteria:
+      - {
+          source: hits,
+          column: identity_fraction,
+          operator: gte,
+          parameter: minimum_identity,
+        }
+    evidence_fields:
+      - { source: hits, column: identity_fraction }
+      - { source: hits, column: e_value }
+      - { source: hits, column: bit_score }
+    description: Method-bound similarity candidate, not an identity or orthology assertion.
+```
+
+Compilation lowers the criteria to typed row predicates. It does **not** add an
+ontology edge, turn similarity into equality, or infer a transitive closure.
+The compilation explanation and reproducibility lock carry the relationship
+kind, method field, pinned evidence database/release, `criteria_digest`, and
+complete `relationship_digest`. Changing a cutoff changes the criteria digest;
+changing the evidence release changes the relationship digest.
+
+### Candidate decision ledgers
+
+An RQL run normally returns the recipe's result plus aggregate relationship
+audits. When you need to inspect exactly why each measured pair did or did not
+enter a candidate cohort, use the closed evidence-ledger projection:
+
+```bash
+# Compile first; the response lists each stable criterion_plan[].index.
+rafflesia query rql compile homology_structure_mappings \
+  --source homology_search_hits=homology-results,2026-07 \
+  --source protein_structure_mappings=structure-mappings,2026-07 \
+  --parameter retained_search_id=hsrch_abc
+
+# Replace CRITERION_INDEX with the compiled identity_fraction criterion index.
+rafflesia query rql evidence homology_structure_mappings \
+  --source homology_search_hits=homology-results,2026-07 \
+  --source protein_structure_mappings=structure-mappings,2026-07 \
+  --parameter retained_search_id=hsrch_abc \
+  --threshold-sweep sequence_similarity_candidate:CRITERION_INDEX=0.9,0.7,0.5 \
+  --profile strict_joint=sequence_similarity_candidate:CRITERION_INDEX=0.9,sequence_similarity_candidate:COVERAGE_INDEX=0.8 \
+  --profile relaxed_joint=sequence_similarity_candidate:CRITERION_INDEX=0.7,sequence_similarity_candidate:COVERAGE_INDEX=0.5 \
+  --table profiles \
+  --format ndjson
+```
+
+There is one deterministic row per candidate and criterion. Each row includes
+the ontology primary key, subject, object, method, scope, measured value, unit,
+ontology value type, operator, threshold, missing-evidence policy, explicit criterion and cumulative
+`pass`, `fail`, or `missing` states, cumulative acceptance, exact release, and
+compiler, ontology, criterion, and relationship digests. Set-operation rows
+retain their branch number and `union_all`, `intersect`, or `except` identity
+instead of being silently mixed with the base release.
+
+Candidate rows are restricted by every active filter local to the evidence
+source—such as a retained search id, namespace, or rank bound—and expose the
+canonical filter count and digest. Filters that need a joined contextual source
+are excluded with a structured warning instead of being approximated. Branch
+filters are rebound to their set-operation aliases. In cumulative state, an
+observed failure takes precedence over missing evidence; `missing` means that
+no observed criterion has failed, while `is_cumulative_accepted` records the
+declared retain-or-reject policy exactly.
+
+A threshold sweep can replace only one compiled numeric criterion, must preserve
+the ontology's direction and range, and reports input, accepted, gained, and
+lost membership counts. It does not change the recipe result or turn similarity
+into equality.
+
+Evidence profiles cover the closed multi-criterion case. Each `--profile`
+names a bounded conjunction of thresholds by compiled relationship name and
+criterion index. The compiler still owns the field, operator direction, unit,
+range, and missing-evidence policy. It emits one typed candidate/profile row
+with `accepted`, `failed`, or `missing` state and the first responsible
+criterion. Every profile has an exact comparison with the authored criteria;
+each profile after the first also has an exact comparison with the preceding
+profile in caller order. Those adjacent comparisons report gained, lost,
+unchanged accepted, unchanged rejected, and missing counts with their own
+measurement and membership digests. Set-operation branch overrides remain
+scoped to the compiled branch relationship and never leak to the base branch.
+
+Relationship comparisons cover concordance across independent evidence sources.
+Where a profile measures sensitivity within one relationship, a
+`--relationship-comparison name=left:right` compares two compiled relationships
+over their shared typed candidate identity space—for example a base release
+against a set-operation release branch, or two methods over the same subject and
+object. Each distinct accepted `(subject, object)` key is classified `both`,
+`left_only`, or `right_only`, and the summary reports exact counts, the two
+methods and releases, the matched scope, per-side source digests, and a
+membership digest.
+
+Comparability is decided once, at compile time, from the ontology. Two
+relationships are comparable only when they share a scope kind and either
+resolve to the identical typed subject and object columns (the base-vs-branch
+case) or declare the same non-empty identifier namespace on both. Overlapping
+values never imply comparability: a pair with a mismatched scope, an undeclared
+namespace, or different namespaces resolves to `not_comparable` with an exact
+reason and a single sentinel row, never a fabricated join. Comparisons are
+caller-selected and bounded; the compiler never compares all pairs, and it never
+turns concordance into biological truth.
+
+JSON returns the complete envelope, including `profile_comparisons`,
+`profile_pair_comparisons`, and `relationship_comparisons`. CSV and NDJSON
+stream the table selected by `--table criteria|profiles|comparisons`;
+`--format parquet --max-rows N` hands the corresponding portable query to the
+generic immutable query exporter. Profile and comparison result and summary
+digests are bound into the reproducibility lock.
+
+The ledger is an execution option, not a new expression language. RQL remains
+closed: callers cannot inject columns, SQL expressions, macros, CTEs, or window
+functions through it.
+
+### `order_by`
+
+Sorts the result by a dimension or measurement alias.
+
+When a module declares `result_key`, every alias must be projected and included
+in `order_by`. The compilation response also reports the compiler-derived
+`result_grain`, the declared total key, and activated/pruned joins, so a caller
+can inspect pagination and fanout semantics before executing.
+
+```yaml
+order_by:
+  - alias: distance_angstrom
+    direction: asc
+```
+
+### `strict_joins`
+
+Whether unresolved join keys fail loudly (`true`) or are tolerated (`false`).
+See [Join safety](/ontology/joins#strict_joins).
+
+### `quality_notes`
+
+Free-text caveats that travel with the recipe — most often the reminder that the
+recipe returns _measurements from pinned relations, and biological interpretation
+stays with the caller_. The engine is an instrument; the recipe never editorializes.
+
+## One ontology, many questions
+
+Because every recipe draws on the same typed ontology, a handful of small files
+covers biological questions that would otherwise each need bespoke, error-prone
+SQL:
+
+| Recipe                       | Question                                                         |
+| ---------------------------- | ---------------------------------------------------------------- |
+| `variant_ligand_context`     | Which ligands sit closest to each mapped variant residue?        |
+| `confidence_pocket_context`  | Which detected pockets have high recorded local confidence?      |
+| `interface_contact_counts`   | How many materialized contact rows exist per interface ID?       |
+| `structure_mapping_coverage` | How many range-complete mapping rows exist per structure source? |
+
+Each is a different scientific workload — variant↔ligand proximity, local
+pocket confidence, interface contacts, and mapping evidence — answered by the
+same typed layer. Recipes do not retain joins whose review provenance is
+missing; affected measurements stay single-relation until a reviewed join is
+promoted.
+
+## Compilation and reproducibility
+
+A recipe is not the query engine; it is a portable description that **compiles to
+a `SELECT`**. Portable SQL is Rafflesia's universal execution contract: the
+public boundary is stateless — a query submits `(database, release, relation)`
+sources plus a bounded `SELECT`, and gets back typed rows, measurements,
+provenance, and warnings. Two properties follow:
+
+- **Portable.** The same `.rql` compiles to the SQL the bounded engine (DuckDB or
+  ClickHouse) runs — the recipe never hard-codes a dialect.
+- **Reproducible.** A run is pinned to the ontology it compiled against, stamped
+  with that ontology's **digest** and the resolved release digests. Given the
+  recipe and those digests, the compiled SQL and its result are fully determined.
+
+<Note>
+  **Reproducible down to the digest**
+
+  When a result needs to be defended — in a model's training set, a report, or a
+  decision — the recipe plus the ontology digest is enough to regenerate exactly
+  the SQL that produced it. Nothing is inferred at run time.
+</Note>
+
+## Where to go next
+
+- Revisit [Identity & namespaces](/ontology/identity) to see why
+  the join keys in a recipe are typed the way they are.
+- See [Join safety](/ontology/joins) for what the ontology checks
+  before a recipe reads a row.

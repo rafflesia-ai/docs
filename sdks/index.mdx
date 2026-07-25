@@ -1,0 +1,168 @@
+---
+title: SDKs
+description: Official Rafflesia clients for Node, Python, Go, Rust, Java, .NET, Ruby, and PHP — all generated from one OpenAPI contract.
+---
+
+Eight official clients. Each one is generated from the same curated
+[OpenAPI contract](/api-reference/introduction) that backs this reference, so the
+request and response types in your editor are the server's types — not a
+hand-maintained mirror that drifts.
+
+Because they are generated from that contract, the clients expose exactly the
+[published surface](/api-reference/introduction#the-published-surface) and nothing
+more: a method appears when its route becomes public, not before.
+
+| Language | Package | Registry |
+| --- | --- | --- |
+| TypeScript / Node | `@rafflesia/node` | npm |
+| Python | `rafflesia-sdk` | PyPI |
+| Go | `github.com/rafflesia-ai/rafflesia-go` | Go modules |
+| Rust | `rafflesia` | crates.io |
+| Java | `ai.rafflesia:rafflesia` | Maven Central |
+| .NET | `Rafflesia` | NuGet |
+| Ruby | `rafflesia` | RubyGems |
+| PHP | `rafflesia/rafflesia` | Packagist |
+
+Every client defaults to `https://api.rafflesia.ai`, reads `RAFFLESIA_API_KEY`
+from the environment when no key is passed, and groups operations by resource
+(`client.homology.…`).
+
+## Install and construct
+
+<CodeGroup>
+
+```bash npm
+npm install @rafflesia/node
+```
+
+```bash pip
+pip install rafflesia-sdk
+```
+
+```bash go
+go get github.com/rafflesia-ai/rafflesia-go
+```
+
+```bash cargo
+cargo add rafflesia
+```
+
+```bash dotnet
+dotnet add package Rafflesia
+```
+
+```bash gem
+gem install rafflesia
+```
+
+```bash composer
+composer require rafflesia/rafflesia
+```
+
+```xml maven
+<dependency>
+  <groupId>ai.rafflesia</groupId>
+  <artifactId>rafflesia</artifactId>
+  <version>0.1.0</version>
+</dependency>
+```
+
+</CodeGroup>
+
+<CodeGroup>
+
+```ts TypeScript
+import { Rafflesia } from "@rafflesia/node";
+
+const client = new Rafflesia({ apiKey: process.env.RAFFLESIA_API_KEY });
+```
+
+```python Python
+from rafflesia import RafflesiaClient
+
+client = RafflesiaClient()  # reads RAFFLESIA_API_KEY and RAFFLESIA_API_BASE_URL
+```
+
+```go Go
+package main
+
+import (
+    "log"
+
+    rafflesia "github.com/rafflesia-ai/rafflesia-go"
+)
+
+func main() {
+    // Empty key reads RAFFLESIA_API_KEY from the environment.
+    client, err := rafflesia.NewClient("")
+    if err != nil {
+        log.Fatal(err)
+    }
+    _ = client
+}
+```
+
+```rust Rust
+use rafflesia::Rafflesia;
+
+#[tokio::main]
+async fn main() {
+    let client = Rafflesia::new(std::env::var("RAFFLESIA_API_KEY").unwrap());
+    // client.<service>().<method>(...).await?
+}
+```
+
+```java Java
+import ai.rafflesia.RafflesiaClient;
+
+RafflesiaClient client = new RafflesiaClient(System.getenv("RAFFLESIA_API_KEY"));
+```
+
+```csharp C#
+using Rafflesia;
+
+var client = new Rafflesia.Rafflesia(
+    Environment.GetEnvironmentVariable("RAFFLESIA_API_KEY"));
+// var result = await client.Homology.CreateAsync(options);
+```
+
+```ruby Ruby
+require 'rafflesia'
+
+client = Rafflesia::Client.new(api_key: ENV.fetch('RAFFLESIA_API_KEY'))
+# client.homology.create(...)
+```
+
+```php PHP
+<?php
+require 'vendor/autoload.php';
+
+use Rafflesia\Client;
+
+$client = new Client(apiKey: getenv('RAFFLESIA_API_KEY'));
+```
+
+</CodeGroup>
+
+## Requirements
+
+| Language | Minimum |
+| --- | --- |
+| Node | 18 |
+| Python | 3.11 |
+| Go | 1.21 |
+| Java | 17 |
+| Ruby | 3.0 |
+| PHP | 8.2 |
+
+## What the SDKs give you beyond HTTP
+
+- **Typed envelopes.** `ok`, `data`, `warnings`, `evidence`, and `provenance` are
+  typed, so `warnings` is hard to ignore by accident.
+- **Typed errors.** Failures raise a client error carrying `status_code`, `type`,
+  `code`, `param`, `doc_url`, `details`, and the `request_id`.
+- **Pagination helpers.** Cursor iteration for the list endpoints.
+- **A base URL you can point anywhere.** Every client accepts a base URL for
+  local engines and staging.
+
+Sources live at [github.com/rafflesia-ai](https://github.com/rafflesia-ai).

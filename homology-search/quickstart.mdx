@@ -1,0 +1,95 @@
+---
+title: Quickstart
+description: Run your first homology computation against an immutable database release.
+---
+
+`POST /v1/homology` takes a query, a target release, and what evidence
+you want back. The computation is **durable** — it is
+accepted, then retrieved, then paged — so a long search survives a dropped
+connection and the same request never runs twice.
+
+## Run a computation
+
+```bash
+curl https://api.rafflesia.ai/v1/homology \
+  -H "Authorization: Bearer $RAFFLESIA_API_KEY" \
+  -H "Idempotency-Key: $(uuidgen)" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query":  { "kind": "protein_sequence", "sequence": "MKTAYIAKQR..." },
+    "target": { "database_release_id": "dbr_..." },
+    "results": {
+      "unit": "target",
+      "evidence": "pairwise_sequence_alignment",
+      "max_results": 50,
+      "significance_requirement": "if_available"
+    }
+  }'
+```
+
+`target.database_release_id` pins an immutable release, so the same request
+always searches the same bytes. List what you can search with
+`GET /v1/homology_databases`.
+
+`results` states what you are asking for, not how to compute it:
+
+- **`evidence`** — `pairwise_sequence_alignment` for exact alignments, or
+  `candidate_measurement` for unverified candidates.
+- **`max_results`** — how many targets to materialize.
+- **`significance_requirement`** — `not_requested`, `if_available`, or
+  `required`. `required` fails the computation rather than returning
+  uncalibrated results.
+
+Optional: `constraints` (`deadline_ms`, `max_billable_units`), `policy.id` to
+pin an exact search policy, and `target.filter` to restrict the searched
+documents.
+
+## Wait, or don't
+
+The `Prefer` header controls the transport only — never the science:
+
+| `Prefer` | Behavior |
+| --- | --- |
+| *(omitted)* | Wait briefly, then return whatever state has been reached. |
+| `respond-async` | Return as soon as the computation is durably accepted. |
+| `wait=N` | Wait up to N seconds (0–60). |
+
+You get **`201 Created`** when the computation is already terminal, or
+**`202 Accepted`** with a `Location` header while work remains. Either way the
+body is the same object, and `Preference-Applied` echoes what the server honored.
+
+## Retrieve and page
+
+```bash
+curl https://api.rafflesia.ai/v1/homology/hsrch_... \
+  -H "Authorization: Bearer $RAFFLESIA_API_KEY"
+```
+
+`status` moves `queued → running → succeeded | failed`. On success the object
+carries a `result_set` summary, the `receipt` (what the engine actually read),
+`policy_id`, the target space it resolved, and `specification_sha256` — the
+content address of the computation itself, which is what makes a rerun
+identifiable as the same question.
+
+Results are paged separately, because a result set can be large:
+
+```bash
+curl "https://api.rafflesia.ai/v1/homology/hsrch_.../results?limit=50" \
+  -H "Authorization: Bearer $RAFFLESIA_API_KEY"
+```
+
+Pass the previous page's cursor as `starting_after` to continue.
+
+## Read the result
+
+Each result carries **named measurements, not a single score** — alignment
+geometry, identity counts, and, when requested and available, calibrated
+significance. Nothing in the response says "these are homologs": the engine
+reports what it measured and against which release, and the caller draws the
+conclusion.
+
+<Note>
+  Every response is the standard [envelope](/concepts/primitives). Read
+  `warnings` — that is where a truncated result set, an unavailable significance
+  model, or an exhausted budget is reported.
+</Note>

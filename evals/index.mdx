@@ -1,0 +1,29 @@
+---
+title: Evals
+description: Deterministic environments that grade research agents and the search engine against hidden references and curated ground truth.
+---
+
+Two evaluation systems measure whether the engine — and the agents built on it —
+actually work. Both grade against evidence the agent cannot see, so scores can't
+be gamed.
+
+## Structural-biology environments
+
+Each task is a resettable workspace: an agent gets input files and a prompt, and
+must produce named artifacts — a structure model, a contact table, a rendered
+image. Those artifacts are graded deterministically against a hidden reference,
+and the reward is a weighted composite of geometric measurements (lDDT, TM-score,
+DockQ, clash, contact F1, map fit) versus a per-task threshold. Held-out
+validation metrics penalize overfitting to the evidence the agent can see. Tool
+use is policy-gated rather than scored, and full trajectories are logged for
+replay and audit.
+
+## Homology-recall benchmarks
+
+For the search engine itself, curated **truth sets** derived from SCOPe/CATH
+structure classification and Pfam/InterPro domain families label query–target
+pairs as positive, negative, or ignore. Runs are scored on biological recall
+(`positive_recall_at_k`) against false-positive ceilings, across strata like
+remote homologs, low-complexity, transmembrane, and shuffled decoys. Tool
+outputs (MMseqs2, DIAMOND, BLAST) are kept as comparison baselines only — never
+as ground-truth labels.

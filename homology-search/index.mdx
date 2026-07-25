@@ -1,0 +1,28 @@
+---
+title: Homology search
+description: One endpoint over immutable, object-storage-backed releases — POST /v1/homology.
+---
+
+Rafflesia's homology engine compiles a biological corpus once into an immutable
+release, then answers a protein-sequence query by range-reading only the bytes
+that query needs. Every result comes back as a named measurement with full
+provenance — never a bare score, and never a "homolog" verdict.
+
+One call starts the work: **`POST /v1/homology`**. The computation is
+durable, so you then retrieve it and page its results by id.
+
+<Columns cols={2}>
+  <Card title="Quickstart" icon="terminal" href="/homology-search/quickstart">
+    Run a computation, wait or poll, page the results.
+  </Card>
+  <Card title="Architecture" icon="layers" href="/homology-search/architecture">
+    Immutable releases, byte-range reads, and where the cost goes.
+  </Card>
+</Columns>
+
+## Next steps
+
+- Run your first computation in the [Quickstart](/homology-search/quickstart).
+- See how immutable releases and byte-range reads work in [Architecture](/homology-search/architecture).
+- Read the request and response fields in the
+  [API reference](/api-reference/introduction).

@@ -1,0 +1,73 @@
+---
+title: Lossy & range mappings
+description: How the ontology relates identities that are the same but imperfect across sources — without pretending the mapping is exact.
+---
+
+[Identity](/ontology/identity) keeps values apart by default, and a
+[relationship](/ontology/joins) is what lets two of them join. But
+not every biological mapping is a clean one-to-one equality. Some drop rows, some
+approximate, and some relate an interval to the positions inside it. The ontology
+makes that imperfection **explicit on the relationship itself**, so a query can
+see the risk instead of inheriting it silently.
+
+## `is_lossy`
+
+A lossy relationship maps to the same entity but does not preserve every row —
+a sequence maps to a structure that only covers part of it, or a mapping that
+exists only where an alignment was found. The join is still type-safe; it just
+warns that absence of a match is not evidence of absence.
+
+```json
+{
+  "relation": "protein_structure_mappings",
+  "cardinality": "many_to_one",
+  "local_columns": ["sequence_id"],
+  "remote_columns": ["sequence_id"],
+  "is_lossy": true
+}
+```
+
+Under `strict_joins`, lossy edges still join, but the recipe author has declared,
+in the ontology, that partial coverage is expected here.
+
+## `is_range_mapping`
+
+A range mapping relates a **position to an interval that contains it**, rather than
+matching two equal values. SIFTS observed ranges, genome-interval overlaps, and
+flanks all work this way: the join condition is containment, not equality.
+
+```json
+{
+  "relation": "genome_interval_overlaps",
+  "cardinality": "many_to_many",
+  "local_columns": ["reference_id", "start", "end"],
+  "remote_columns": ["reference_id", "position"],
+  "is_range_mapping": true
+}
+```
+
+Marking the relationship as a range mapping is what stops the compiler from
+treating `start`/`end` as ordinary equality keys — and what tells the caller the
+result is an interval relationship.
+
+## `coordinate_notes`
+
+When a mapping is exact but carries a caveat, the relationship spells it out:
+
+> `structure_residue_number` equals `residue_features.position` exactly — but
+> confirm `wildtype_matches` before trusting the mapping.
+
+These notes travel with the ontology, so the warning is visible at query-planning
+time rather than discovered in the data.
+
+<Note>
+  **Declared, never inferred**
+
+  The ontology never guesses that two identities are the same, and it never
+  hides that a mapping is imperfect. `is_lossy`, `is_range_mapping`, and
+  `coordinate_notes` are declarations — the deliberate cost that buys a query
+  the ability to reason about its own uncertainty.
+</Note>
+
+Next: [Relations](/ontology/relations) — the typed sources these
+relationships connect.

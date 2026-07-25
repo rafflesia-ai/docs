@@ -1,0 +1,98 @@
+---
+title: API reference
+description: Base URL, authentication, response headers, idempotency, and pagination for the Rafflesia REST API.
+---
+
+The Rafflesia API is JSON over HTTPS. Every endpoint returns the same
+[envelope](/concepts/primitives), and every endpoint documented here is generated
+from the curated OpenAPI contract — the same contract the [SDKs](/sdks) are
+generated from.
+
+<Card title="Base URL" icon="globe">
+  `https://api.rafflesia.ai`
+</Card>
+
+## The published surface
+
+The REST surface is deliberately small and grows one route at a time. A route is
+public only when it is declared in the API's public-route manifest; everything
+else the engine serves is internal and is not part of this reference, the SDKs,
+or the generated CLI.
+
+Today that surface is **homology search**. The endpoint pages in this section are
+the complete published API — if a capability is documented in a guide but has no
+endpoint page here, it is not yet exposed as a public route.
+
+<Note>
+  The `rafflesia` CLI covers a much wider set of primitives than the published
+  REST surface. Those commands are the supported way to reach them; the REST
+  contract is what carries a stability promise.
+</Note>
+
+## Authentication
+
+Send an API key as a bearer token. Create keys in the
+[dashboard](https://dashboard.rafflesia.ai).
+
+```bash
+curl https://api.rafflesia.ai/v1/refs/resolve \
+  -H "Authorization: Bearer $RAFFLESIA_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"query": "BRCA1", "limit": 5}'
+```
+
+Requests are scoped to the organization that owns the key. A well-formed key on a
+resource outside its scope is refused as an authorization failure, not a bad
+credential.
+
+## Shape of a request
+
+Most primitives are `POST` with a JSON body, including read-only ones. That is
+deliberate: the inputs are structured (multiple identifiers, budgets, release
+pins, source declarations), and a canonical JSON body is what makes
+`provenance.input_hash` reproducible.
+
+## Response headers
+
+| Header | Meaning |
+| --- | --- |
+| `X-Request-ID` | Unique id for this request. Echoed in `provenance.request_id`. Quote it in any report. |
+| `Rafflesia-Version` | Server version that produced the response. |
+| `Rafflesia-Contract-Digest` | Digest of the served API contract. A change means the surface moved. |
+
+## Idempotency
+
+Every `POST` accepts an `Idempotency-Key`. Retrying with the same key returns the
+original result instead of creating a second job or object — which matters
+because a timeout tells you nothing about whether the work happened.
+
+```bash
+-H "Idempotency-Key: $(uuidgen)"
+```
+
+## Errors
+
+Failures use the envelope with `ok: false` and a typed `error` whose `code` is
+stable. The categories and their HTTP statuses are in [Errors](/errors).
+
+Error bodies for transport-level problems follow
+`application/problem+json`; primitive-level failures come back in the standard
+envelope.
+
+## Pagination
+
+List endpoints return an opaque `next_cursor`. Pass it back as `cursor` to
+continue. Do not construct or parse cursors — they encode server-side position
+and are not stable input.
+
+## Durable jobs
+
+Long operations — structure prediction, background searches, exports — are
+submitted as jobs. The submit call returns a job id; poll the job endpoint until
+it reaches a terminal state, then read the content-addressed objects it
+produced.
+
+## Rate limits
+
+Rate-limited requests return `429` with `type: rate_limit_error`. Back off and
+retry; the same request will succeed later.
