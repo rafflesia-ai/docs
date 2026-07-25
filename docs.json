@@ -186,7 +186,7 @@
   },
   "redirects": [
     {
-      "source": "/errors/:code",
+      "source": "/errors/:code*",
       "destination": "/errors"
     },
     {
