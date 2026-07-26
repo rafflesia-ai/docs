@@ -78,11 +78,11 @@ Every one of them prints the same envelope shape: `ok`, `data`, `warnings`, and
 
 ## 5. Search for homologs
 
-`POST /v1/homology` targets exactly one immutable database release and returns
+`POST /v1/homology/searches` targets exactly one immutable database release and returns
 measurements with provenance:
 
 ```bash
-curl https://api.rafflesia.ai/v1/homology \
+curl https://api.rafflesia.ai/v1/homology/searches \
   -H "Authorization: Bearer $RAFFLESIA_API_KEY" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
@@ -98,8 +98,8 @@ curl https://api.rafflesia.ai/v1/homology \
   }'
 ```
 
-The computation is durable: retrieve it at `GET /v1/homology/{id}` and page its
-results at `GET /v1/homology/{id}/results`. See the
+The computation is durable: retrieve it at `GET /v1/homology/searches/{id}` and page its
+results at `GET /v1/homology/searches/{id}/results`. See the
 [homology quickstart](/homology-search/quickstart).
 
 ## 6. Query across sources

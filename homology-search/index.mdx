@@ -1,6 +1,6 @@
 ---
 title: Homology search
-description: One endpoint over immutable, object-storage-backed releases — POST /v1/homology.
+description: One endpoint over immutable, object-storage-backed releases — POST /v1/homology/searches.
 ---
 
 Rafflesia's homology engine compiles a biological corpus once into an immutable
@@ -8,7 +8,7 @@ release, then answers a protein-sequence query by range-reading only the bytes
 that query needs. Every result comes back as a named measurement with full
 provenance — never a bare score, and never a "homolog" verdict.
 
-One call starts the work: **`POST /v1/homology`**. The computation is
+One call starts the work: **`POST /v1/homology/searches`**. The computation is
 durable, so you then retrieve it and page its results by id.
 
 <Columns cols={2}>

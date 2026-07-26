@@ -12,7 +12,6 @@
     "default": "system"
   },
   "background": {
-    "decoration": "grid",
     "color": {
       "light": "#FFFFFF",
       "dark": "#000000"

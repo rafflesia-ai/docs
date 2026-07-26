@@ -1,83 +1,83 @@
 ---
 title: Authentication
-description: Interactive login, API keys, and how the CLI decides which server a credential is sent to.
+description: Authenticate the rafflesia CLI with OAuth, an access token, or an API key.
 ---
 
-Rafflesia accepts one credential type on the wire: a bearer token in the
-`Authorization` header. That token is either an **API key** (for scripts, agents,
-and CI) or a **session credential** minted by interactive login.
+## Browser OAuth
 
-```http
-Authorization: Bearer sk_production_…
-```
-
-## Interactive login
+OAuth with PKCE is the default login:
 
 ```bash
-rafflesia auth login --server https://api.rafflesia.ai
+rafflesia auth login
 ```
 
-This opens AuthKit in a browser, completes the exchange on a loopback callback,
-and stores the credential locally. Useful flags:
-
-| Flag | Purpose |
-| --- | --- |
-| `--no-open` | Print the authorization URL instead of opening a browser (headless hosts, remote shells). |
-| `--callback-port <n>` | Pin the loopback callback port; `0` picks a free one. |
-| `--login-hint <email>` | Pre-fill the email. |
-| `--organization-id <id>` | Request a session scoped to a specific organization. |
-| `--connection-id <id>` | Request a specific SSO connection. |
-
-Check and clear it with:
+The CLI starts a loopback callback listener, opens the AuthKit authorization
+URL, validates the callback state, exchanges the code, and stores the access
+and refresh tokens through the generated public SDK's credential-free `Auth`
+service. It refreshes the access token when it is within one minute of expiry.
+For a headless shell:
 
 ```bash
-rafflesia auth status
-rafflesia auth logout
+rafflesia auth login --no-open
 ```
+
+Optional `--provider`, `--connection-id`, `--organization-id`, `--login-hint`,
+and `--domain-hint` flags narrow the authorization request. Force a refresh at
+any time with:
+
+```bash
+rafflesia auth refresh
+```
+
+## Access tokens
+
+Store an existing OAuth access token:
+
+```bash
+rafflesia auth login --access-token "$RAFFLESIA_ACCESS_TOKEN"
+```
+
+This path does not have a refresh token; replace it when it expires.
 
 ## API keys
 
-Create keys in the [dashboard](https://dashboard.rafflesia.ai). A key looks like
-`sk_<environment>_<secret>` — the environment slug is part of the prefix, so a
-staging key is visibly not a production key. The secret is shown once at
-creation; only its prefix and hash are stored.
+Store an API key:
 
 ```bash
-export RAFFLESIA_API_BASE_URL=https://api.rafflesia.ai
-export RAFFLESIA_API_KEY=sk_production_…
-rafflesia auth status
+rafflesia auth login --api-key "$RAFFLESIA_API_KEY"
 ```
 
-Or per invocation:
+Access tokens and API keys are both sent as bearer credentials. Resolution order
+for API commands is:
+
+1. `--access-token` or `--api-key`, plus `--server`
+2. `RAFFLESIA_ACCESS_TOKEN`, then `RAFFLESIA_API_KEY`, plus `RAFFLESIA_API_BASE_URL`
+3. the stored login
+4. `https://api.rafflesia.ai` for the server
+
+The two credential flags are mutually exclusive.
+
+## Storage and logout
+
+Inspect the effective method without printing the full credential:
 
 ```bash
-rafflesia refs resolve BRCA1 --server https://api.rafflesia.ai --api-key sk_production_…
+rafflesia auth status
+rafflesia auth verify
+```
+
+`auth verify` sends an authenticated capabilities request. An invalid or
+expired bearer credential fails with the API's structured authentication error.
+
+The CLI writes `rafflesia/config.json` below the operating system's user config
+directory atomically with mode `0600`. Set `RAFFLESIA_CONFIG_PATH` to use an
+exact isolated path. Remove the stored login with:
+
+```bash
+rafflesia auth logout
 ```
 
 <Warning>
-  Prefer `RAFFLESIA_API_KEY` over `--api-key` in shared environments — a flag
-  value lands in your shell history and in process listings.
+  Prefer credential environment variables over command-line flags in shared
+  environments because flags can appear in shell history and process listings.
 </Warning>
-
-## Which server gets the credential
-
-`auth login` records the server it authenticated against, so a credential minted
-for one server is never replayed against another. Resolution order:
-
-1. `--server`
-2. `RAFFLESIA_API_BASE_URL`
-3. the server recorded by `auth login`
-4. `http://127.0.0.1:8081` — a **local development engine**
-
-<Note>
-  Step 4 is the reason a "why is my data empty?" session usually ends with a
-  forgotten `--server`. If you are talking to the hosted API, set
-  `RAFFLESIA_API_BASE_URL=https://api.rafflesia.ai` once in your shell profile.
-</Note>
-
-## Organization scope
-
-Sessions are scoped to an organization. A credential without an organization can
-authenticate but will be refused on organization-scoped resources — that is a
-scope problem, not a bad key. `rafflesia auth status` shows the active
-credential and the scope it carries.

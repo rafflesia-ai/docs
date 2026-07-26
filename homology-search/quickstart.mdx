@@ -3,7 +3,7 @@ title: Quickstart
 description: Run your first homology computation against an immutable database release.
 ---
 
-`POST /v1/homology` takes a query, a target release, and what evidence
+`POST /v1/homology/searches` takes a query, a target release, and what evidence
 you want back. The computation is **durable** — it is
 accepted, then retrieved, then paged — so a long search survives a dropped
 connection and the same request never runs twice.
@@ -11,7 +11,7 @@ connection and the same request never runs twice.
 ## Run a computation
 
 ```bash
-curl https://api.rafflesia.ai/v1/homology \
+curl https://api.rafflesia.ai/v1/homology/searches \
   -H "Authorization: Bearer $RAFFLESIA_API_KEY" \
   -H "Idempotency-Key: $(uuidgen)" \
   -H "Content-Type: application/json" \
@@ -29,7 +29,7 @@ curl https://api.rafflesia.ai/v1/homology \
 
 `target.database_release_id` pins an immutable release, so the same request
 always searches the same bytes. List what you can search with
-`GET /v1/homology_databases`.
+`GET /v1/homology/databases`.
 
 `results` states what you are asking for, not how to compute it:
 
@@ -61,7 +61,7 @@ body is the same object, and `Preference-Applied` echoes what the server honored
 ## Retrieve and page
 
 ```bash
-curl https://api.rafflesia.ai/v1/homology/hsrch_... \
+curl https://api.rafflesia.ai/v1/homology/searches/hsrch_... \
   -H "Authorization: Bearer $RAFFLESIA_API_KEY"
 ```
 
@@ -74,7 +74,7 @@ identifiable as the same question.
 Results are paged separately, because a result set can be large:
 
 ```bash
-curl "https://api.rafflesia.ai/v1/homology/hsrch_.../results?limit=50" \
+curl "https://api.rafflesia.ai/v1/homology/searches/hsrch_.../results?limit=50" \
   -H "Authorization: Bearer $RAFFLESIA_API_KEY"
 ```
 

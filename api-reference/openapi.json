@@ -30,6 +30,7 @@
             "enum": [
               "invalid_request_error",
               "resource_missing",
+              "resource_expired",
               "conflict_error",
               "rate_limit_error",
               "authentication_error",
@@ -45,6 +46,278 @@
           "code",
           "message",
           "doc_url"
+        ],
+        "type": "object"
+      },
+      "AuthEnvelopeCLIAuthorizeData": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/AuthEnvelopeCLIAuthorizeData.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CLIAuthorizeData",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/AuthError",
+            "description": "Structured error information."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "type": "object"
+      },
+      "AuthEnvelopeCLITokenData": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/AuthEnvelopeCLITokenData.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/CLITokenData",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/AuthError",
+            "description": "Structured error information."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "ok"
+        ],
+        "type": "object"
+      },
+      "AuthError": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "details": {},
+          "message": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "message"
+        ],
+        "type": "object"
+      },
+      "AuthUser": {
+        "additionalProperties": false,
+        "properties": {
+          "email": {
+            "type": "string"
+          },
+          "email_verified": {
+            "type": "boolean"
+          },
+          "first_name": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "last_name": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "email",
+          "email_verified"
+        ],
+        "type": "object"
+      },
+      "CLIAuthorizeData": {
+        "additionalProperties": false,
+        "properties": {
+          "authorization_url": {
+            "type": "string"
+          },
+          "redirect_uri": {
+            "type": "string"
+          },
+          "state": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "authorization_url",
+          "redirect_uri",
+          "state"
+        ],
+        "type": "object"
+      },
+      "CLIRefreshRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/CLIRefreshRequest.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "organization_id": {
+            "type": "string"
+          },
+          "refresh_token": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh_token"
+        ],
+        "type": "object"
+      },
+      "CLITokenData": {
+        "additionalProperties": false,
+        "properties": {
+          "access_token": {
+            "type": "string"
+          },
+          "entitlements": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "expires_at": {
+            "type": "string"
+          },
+          "organization_id": {
+            "type": "string"
+          },
+          "permissions": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "refresh_token": {
+            "type": "string"
+          },
+          "role": {
+            "type": "string"
+          },
+          "session_id": {
+            "type": "string"
+          },
+          "token_type": {
+            "type": "string"
+          },
+          "user": {
+            "$ref": "#/components/schemas/AuthUser"
+          }
+        },
+        "required": [
+          "access_token",
+          "refresh_token",
+          "token_type"
+        ],
+        "type": "object"
+      },
+      "CLITokenRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/CLITokenRequest.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "code": {
+            "description": "Authorization code from the AuthKit callback.",
+            "type": "string"
+          },
+          "code_verifier": {
+            "description": "PKCE verifier matching the code_challenge sent to /cli/authorize.",
+            "type": "string"
+          },
+          "redirect_uri": {
+            "description": "Loopback URL the code was issued for.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "code",
+          "code_verifier"
+        ],
+        "type": "object"
+      },
+      "CreateHomologyBatchRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/CreateHomologyBatchRequest.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "description": "Independent homology searches. Input order is preserved and no cross-query fusion is performed.",
+            "items": {
+              "$ref": "#/components/schemas/CreateHomologySearchRequest"
+            },
+            "maxItems": 100,
+            "minItems": 1,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "max_concurrency": {
+            "default": 8,
+            "description": "Maximum independent search submissions in flight inside this transport batch.",
+            "format": "int64",
+            "maximum": 32,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "data"
         ],
         "type": "object"
       },
@@ -95,17 +368,16 @@
             "readOnly": true,
             "type": "string"
           },
-          "database_release_id": {
-            "minLength": 1,
+          "DatabaseReleaseID": {
             "type": "string"
           },
-          "filter": {
+          "Filter": {
             "$ref": "#/components/schemas/HomologyDocumentFilter"
           }
         },
         "required": [
-          "database_release_id",
-          "filter"
+          "DatabaseReleaseID",
+          "Filter"
         ],
         "type": "object"
       },
@@ -128,6 +400,206 @@
         "required": [
           "name",
           "version"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyBatch": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyBatch.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyBatch",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyCalibration": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyCalibration.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyCalibration",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyCalibrationList": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyCalibrationList.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyCalibrationList",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyCapabilities": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyCapabilities.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyCapabilities",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
         ],
         "type": "object"
       },
@@ -281,6 +753,106 @@
         ],
         "type": "object"
       },
+      "EnvelopeHomologyPolicy": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyPolicy.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyPolicy",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyPolicyList": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyPolicyList.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyPolicyList",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
       "EnvelopeHomologySearch": {
         "additionalProperties": false,
         "properties": {
@@ -295,6 +867,106 @@
           },
           "data": {
             "$ref": "#/components/schemas/HomologySearch",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologySearchEvaluation": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologySearchEvaluation.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologySearchEvaluation",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologySearchEvaluationList": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologySearchEvaluationList.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologySearchEvaluationList",
             "description": "Operation result data."
           },
           "error": {
@@ -395,6 +1067,106 @@
           },
           "data": {
             "$ref": "#/components/schemas/HomologySearchResultList",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologySemanticProfile": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologySemanticProfile.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologySemanticProfile",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologySemanticProfileList": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologySemanticProfileList.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologySemanticProfileList",
             "description": "Operation result data."
           },
           "error": {
@@ -684,6 +1456,318 @@
         ],
         "type": "object"
       },
+      "HomologyBatch": {
+        "additionalProperties": false,
+        "properties": {
+          "created_at": {
+            "type": "string"
+          },
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyBatchItem"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "expires_at": {
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^hbatch_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "idempotency_key_expires_at": {
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "homology_batch"
+            ],
+            "type": "string"
+          },
+          "retention_class": {
+            "enum": [
+              "standard_30d"
+            ],
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "queued",
+              "running",
+              "succeeded",
+              "partially_succeeded",
+              "failed"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "created_at",
+          "expires_at",
+          "retention_class",
+          "idempotency_key_expires_at",
+          "status",
+          "data"
+        ],
+        "type": "object"
+      },
+      "HomologyBatchCapabilities": {
+        "additionalProperties": false,
+        "properties": {
+          "default_concurrency": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maximum_concurrency": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maximum_items": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "maximum_items",
+          "default_concurrency",
+          "maximum_concurrency"
+        ],
+        "type": "object"
+      },
+      "HomologyBatchItem": {
+        "additionalProperties": false,
+        "properties": {
+          "failure": {
+            "$ref": "#/components/schemas/HomologyFailure"
+          },
+          "index": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "search": {
+            "$ref": "#/components/schemas/HomologySearch"
+          }
+        },
+        "required": [
+          "index"
+        ],
+        "type": "object"
+      },
+      "HomologyCalibration": {
+        "additionalProperties": false,
+        "properties": {
+          "calibrated_score_field": {
+            "enum": [
+              "exact_bidirectional_maxsim",
+              "alignment_raw_score"
+            ],
+            "type": "string"
+          },
+          "calibration_protocol_id": {
+            "type": "string"
+          },
+          "corpus_snapshot_id": {
+            "type": "string"
+          },
+          "database_release_id": {
+            "type": "string"
+          },
+          "empirical_calibration_id": {
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^cal_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "manifest": {
+            "$ref": "#/components/schemas/HomologyCalibrationManifest"
+          },
+          "null_construction_id": {
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "homology_calibration"
+            ],
+            "type": "string"
+          },
+          "search_policy_id": {
+            "type": "string"
+          },
+          "semantic_profile_id": {
+            "type": "string"
+          },
+          "support": {
+            "$ref": "#/components/schemas/HomologyCalibrationSupport"
+          },
+          "target_space_id": {
+            "pattern": "^htsp_[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "target_space_id",
+          "database_release_id",
+          "corpus_snapshot_id",
+          "semantic_profile_id",
+          "search_policy_id",
+          "calibrated_score_field",
+          "calibration_protocol_id",
+          "null_construction_id",
+          "empirical_calibration_id",
+          "support",
+          "manifest"
+        ],
+        "type": "object"
+      },
+      "HomologyCalibrationList": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyCalibration"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "list"
+            ],
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "url",
+          "data",
+          "has_more"
+        ],
+        "type": "object"
+      },
+      "HomologyCalibrationManifest": {
+        "additionalProperties": false,
+        "properties": {
+          "bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "sha256": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "bytes",
+          "sha256"
+        ],
+        "type": "object"
+      },
+      "HomologyCalibrationSupport": {
+        "additionalProperties": false,
+        "properties": {
+          "definition": {
+            "enum": [
+              "exact_target_space_empirical"
+            ],
+            "type": "string"
+          },
+          "eligible_record_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "eligible_residue_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "out_of_support_semantics": {
+            "enum": [
+              "null_measurements_with_typed_support_status"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "definition",
+          "eligible_record_count",
+          "eligible_residue_count",
+          "out_of_support_semantics"
+        ],
+        "type": "object"
+      },
+      "HomologyCapabilities": {
+        "additionalProperties": false,
+        "properties": {
+          "api_versions": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "batch": {
+            "$ref": "#/components/schemas/HomologyBatchCapabilities"
+          },
+          "id": {
+            "enum": [
+              "hcap_current"
+            ],
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "homology_capabilities"
+            ],
+            "type": "string"
+          },
+          "principal_limits": {
+            "$ref": "#/components/schemas/HomologyPrincipalLimits"
+          },
+          "query": {
+            "$ref": "#/components/schemas/HomologyQueryCapabilities"
+          },
+          "results": {
+            "$ref": "#/components/schemas/HomologyResultCapabilities"
+          },
+          "retention": {
+            "$ref": "#/components/schemas/HomologyRetentionCapabilities"
+          },
+          "transport": {
+            "$ref": "#/components/schemas/HomologyTransportCapabilities"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "api_versions",
+          "transport",
+          "query",
+          "results",
+          "batch",
+          "retention",
+          "principal_limits"
+        ],
+        "type": "object"
+      },
       "HomologyDatabase": {
         "additionalProperties": false,
         "properties": {
@@ -884,6 +1968,28 @@
         ],
         "type": "object"
       },
+      "HomologyDatabaseSearchTarget": {
+        "additionalProperties": false,
+        "properties": {
+          "database": {
+            "description": "Database id or slug from homology.databases.list.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/HomologyDocumentFilter"
+          },
+          "release_id": {
+            "description": "Optional exact immutable release id. Omit to use the database's advertised default.",
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "database"
+        ],
+        "type": "object"
+      },
       "HomologyDocumentFilter": {
         "additionalProperties": false,
         "description": "Recursive metadata predicate defining the eligible target population. Field/operator compatibility and limits come from the immutable filter schema for the selected release. Missing fields use strong Kleene logic; only true records are eligible.",
@@ -1002,6 +2108,26 @@
         },
         "required": [
           "op"
+        ],
+        "type": "object"
+      },
+      "HomologyFailure": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "detail": {
+            "type": "string"
+          },
+          "is_retryable": {
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "code",
+          "detail",
+          "is_retryable"
         ],
         "type": "object"
       },
@@ -1541,23 +2667,6 @@
         ],
         "type": "object"
       },
-      "HomologyInlineSearchTarget": {
-        "additionalProperties": false,
-        "properties": {
-          "database_release_id": {
-            "description": "Exact immutable Tomato release identity.",
-            "minLength": 1,
-            "type": "string"
-          },
-          "filter": {
-            "$ref": "#/components/schemas/HomologyDocumentFilter"
-          }
-        },
-        "required": [
-          "database_release_id"
-        ],
-        "type": "object"
-      },
       "HomologyMaxSimMeasurements": {
         "additionalProperties": false,
         "properties": {
@@ -1661,6 +2770,182 @@
         ],
         "type": "object"
       },
+      "HomologyPolicy": {
+        "additionalProperties": false,
+        "properties": {
+          "database_release_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "default_for_release_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "id": {
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "homology_policy"
+            ],
+            "type": "string"
+          },
+          "query_kinds": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "search_evaluation_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "search_evaluation_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "search_policy_contract_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "semantic_profile_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "semantic_profile_urls": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "sha256": {
+            "description": "Digest of this public immutable policy compatibility contract.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "sha256",
+          "database_release_ids",
+          "semantic_profile_ids",
+          "semantic_profile_urls",
+          "search_policy_contract_ids",
+          "search_evaluation_ids",
+          "search_evaluation_urls",
+          "default_for_release_ids",
+          "query_kinds"
+        ],
+        "type": "object"
+      },
+      "HomologyPolicyList": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyPolicy"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "list"
+            ],
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "url",
+          "data",
+          "has_more"
+        ],
+        "type": "object"
+      },
+      "HomologyPrincipalLimits": {
+        "additionalProperties": false,
+        "properties": {
+          "maximum_billable_units": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "maximum_deadline_ms": {
+            "format": "int64",
+            "type": [
+              "integer",
+              "null"
+            ]
+          },
+          "maximum_results": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "source": {
+            "enum": [
+              "deployment_default"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "source",
+          "maximum_results",
+          "maximum_deadline_ms",
+          "maximum_billable_units"
+        ],
+        "type": "object"
+      },
       "HomologyQuery": {
         "additionalProperties": false,
         "properties": {
@@ -1682,11 +2967,150 @@
         ],
         "type": "object"
       },
+      "HomologyQueryCapabilities": {
+        "additionalProperties": false,
+        "properties": {
+          "inline_kinds": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "is_separately_size_limited": {
+            "description": "False means the inline sequence has no separate product limit beyond the HTTP request envelope.",
+            "type": "boolean"
+          },
+          "raw_sequence_retention": {
+            "enum": [
+              "digest_only"
+            ],
+            "type": "string"
+          },
+          "sequence_normalization_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "inline_kinds",
+          "sequence_normalization_id",
+          "raw_sequence_retention",
+          "is_separately_size_limited"
+        ],
+        "type": "object"
+      },
+      "HomologyResultCapabilities": {
+        "additionalProperties": false,
+        "properties": {
+          "default_page_size": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "evidence_kinds": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "export_formats": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "maximum_page_size": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maximum_results": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "significance_modes": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "maximum_results",
+          "default_page_size",
+          "maximum_page_size",
+          "export_formats",
+          "evidence_kinds",
+          "significance_modes"
+        ],
+        "type": "object"
+      },
+      "HomologyResultComparator": {
+        "additionalProperties": false,
+        "properties": {
+          "direction": {
+            "enum": [
+              "higher_is_better",
+              "lower_is_better",
+              "ascending"
+            ],
+            "type": "string"
+          },
+          "measurement": {
+            "description": "Named backend-defined measurement used by the total ordering.",
+            "type": "string"
+          }
+        },
+        "required": [
+          "measurement",
+          "direction"
+        ],
+        "type": "object"
+      },
+      "HomologyRetentionCapabilities": {
+        "additionalProperties": false,
+        "properties": {
+          "class": {
+            "enum": [
+              "standard_30d"
+            ],
+            "type": "string"
+          },
+          "expired_resource_status_code": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "idempotency_key_hours": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "resource_days": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "class",
+          "resource_days",
+          "idempotency_key_hours",
+          "expired_resource_status_code"
+        ],
+        "type": "object"
+      },
       "HomologyReusableTargetSpace": {
         "additionalProperties": false,
         "properties": {
           "calibration_id": {
-            "description": "Optional qualified calibration bound to this target space.",
+            "description": "Optional expert calibration override. The server normally resolves the unique compatible calibration.",
             "pattern": "^cal_[0-9a-f]{64}$",
             "type": "string"
           },
@@ -1707,10 +3131,18 @@
           "created_at": {
             "type": "string"
           },
+          "expires_at": {
+            "description": "RFC 3339 instant after which the retained search and its cursors return 410 Gone.",
+            "type": "string"
+          },
           "failure": {
-            "$ref": "#/components/schemas/HomologySearchFailure"
+            "$ref": "#/components/schemas/HomologyFailure"
           },
           "id": {
+            "type": "string"
+          },
+          "idempotency_key_expires_at": {
+            "description": "RFC 3339 instant through which the create idempotency key is guaranteed to replay the original request.",
             "type": "string"
           },
           "object": {
@@ -1730,6 +3162,13 @@
           },
           "results": {
             "$ref": "#/components/schemas/HomologySearchResultsRequest"
+          },
+          "retention_class": {
+            "description": "Public retained-resource lifecycle applied to this search.",
+            "enum": [
+              "standard_30d"
+            ],
+            "type": "string"
           },
           "specification_sha256": {
             "type": "string"
@@ -1761,6 +3200,9 @@
           "id",
           "object",
           "created_at",
+          "expires_at",
+          "retention_class",
+          "idempotency_key_expires_at",
           "status",
           "query",
           "policy_id",
@@ -1842,23 +3284,183 @@
         },
         "type": "object"
       },
-      "HomologySearchFailure": {
+      "HomologySearchEvaluation": {
         "additionalProperties": false,
         "properties": {
-          "code": {
+          "baseline_id": {
             "type": "string"
           },
-          "detail": {
+          "benchmark_id": {
             "type": "string"
           },
-          "is_retryable": {
+          "canonical_filter_sha256": {
+            "type": "string"
+          },
+          "database_release_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "decision": {
+            "enum": [
+              "promoted",
+              "observational",
+              "not_promoted"
+            ],
+            "type": "string"
+          },
+          "filter_distribution_class": {
+            "enum": [
+              "uniform",
+              "clustered",
+              "adversarial"
+            ],
+            "type": "string"
+          },
+          "filter_selectivity_class": {
+            "enum": [
+              "ultra_sparse",
+              "sparse",
+              "moderate",
+              "broad",
+              "all"
+            ],
+            "type": "string"
+          },
+          "group_manifest_sha256": {
+            "type": "string"
+          },
+          "homology_group_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "id": {
+            "pattern": "^heval_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "is_per_query_confidence": {
+            "description": "Always false. Evaluation evidence is scoped to a frozen benchmark, never an individual query.",
             "type": "boolean"
+          },
+          "measurements": {
+            "items": {
+              "$ref": "#/components/schemas/HomologySearchEvaluationMeasurement"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "object": {
+            "enum": [
+              "homology_search_evaluation"
+            ],
+            "type": "string"
+          },
+          "query_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "search_policy_contract_id": {
+            "pattern": "^hpcon_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "search_policy_id": {
+            "type": "string"
+          },
+          "semantic_profile_id": {
+            "pattern": "^hprof_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "target_space_id": {
+            "pattern": "^htsp_[0-9a-f]{64}$",
+            "type": "string"
           }
         },
         "required": [
-          "code",
-          "detail",
-          "is_retryable"
+          "id",
+          "object",
+          "sha256",
+          "database_release_ids",
+          "semantic_profile_id",
+          "search_policy_id",
+          "search_policy_contract_id",
+          "benchmark_id",
+          "baseline_id",
+          "group_manifest_sha256",
+          "query_count",
+          "homology_group_count",
+          "decision",
+          "measurements",
+          "is_per_query_confidence"
+        ],
+        "type": "object"
+      },
+      "HomologySearchEvaluationList": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/HomologySearchEvaluation"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "list"
+            ],
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "url",
+          "data",
+          "has_more"
+        ],
+        "type": "object"
+      },
+      "HomologySearchEvaluationMeasurement": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "scope": {
+            "type": "string"
+          },
+          "unit": {
+            "type": "string"
+          },
+          "value": {
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "name",
+          "value",
+          "unit",
+          "scope"
         ],
         "type": "object"
       },
@@ -1937,6 +3539,12 @@
       "HomologySearchReceipt": {
         "additionalProperties": false,
         "properties": {
+          "blueprint_capability_version": {
+            "type": "string"
+          },
+          "blueprint_sha256": {
+            "type": "string"
+          },
           "calibration_id": {
             "type": "string"
           },
@@ -1949,8 +3557,41 @@
           "database_release_id": {
             "type": "string"
           },
+          "database_residue_count": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "database_target_count": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
           "engine": {
             "type": "string"
+          },
+          "engine_release": {
+            "type": "string"
+          },
+          "execution_receipt_bytes": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "execution_receipt_id": {
+            "type": "string"
+          },
+          "execution_receipt_sha256": {
+            "type": "string"
+          },
+          "execution_warnings": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
           },
           "filter_schema_id": {
             "type": "string"
@@ -1967,20 +3608,67 @@
           "job_id": {
             "type": "string"
           },
+          "outcome": {
+            "enum": [
+              "complete_exact",
+              "complete_for_policy"
+            ],
+            "type": "string"
+          },
+          "quality_evaluation_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "query_bundle_id": {
+            "type": "string"
+          },
           "query_compilation_id": {
+            "type": "string"
+          },
+          "result_sha256": {
             "type": "string"
           },
           "search_policy_id": {
             "type": "string"
           },
+          "searched_residue_count": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "searched_target_count": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "semantic_profile_family_id": {
+            "type": "string"
+          },
           "semantic_profile_id": {
+            "type": "string"
+          },
+          "semantic_profile_manifest_sha256": {
             "type": "string"
           },
           "submission_id": {
             "type": "string"
           },
+          "target_bundle_id": {
+            "type": "string"
+          },
           "target_space_id": {
             "type": "string"
+          },
+          "usage": {
+            "$ref": "#/components/schemas/HomologySearchReceiptUsage"
+          },
+          "work": {
+            "$ref": "#/components/schemas/HomologySearchReceiptWork"
           }
         },
         "required": [
@@ -1989,9 +3677,87 @@
           "corpus_snapshot_id",
           "semantic_profile_id",
           "search_policy_id",
+          "quality_evaluation_ids",
+          "execution_warnings",
           "is_policy_complete",
           "is_exhaustive",
           "is_deterministic"
+        ],
+        "type": "object"
+      },
+      "HomologySearchReceiptUsage": {
+        "additionalProperties": false,
+        "properties": {
+          "billable_formula_id": {
+            "type": "string"
+          },
+          "billable_units": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "logical_bytes_read": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "logical_bytes_returned": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "object_reads": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "query_pack_bytes": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "logical_bytes_returned"
+        ],
+        "type": "object"
+      },
+      "HomologySearchReceiptWork": {
+        "additionalProperties": false,
+        "properties": {
+          "affine_cells": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "affine_pairs": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "candidate_pairs": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "maxsim_residue_pairs": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "returned_result_count": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "traceback_pairs": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "returned_result_count"
         ],
         "type": "object"
       },
@@ -2096,6 +3862,10 @@
             "format": "int64",
             "type": "integer"
           },
+          "expires_at": {
+            "description": "RFC 3339 instant after which this immutable result set is no longer retrievable through the retained-search API.",
+            "type": "string"
+          },
           "is_result_limit_reached": {
             "type": "boolean"
           },
@@ -2115,7 +3885,8 @@
           "count",
           "sha256",
           "canonical_result_id",
-          "is_result_limit_reached"
+          "is_result_limit_reached",
+          "expires_at"
         ],
         "type": "object"
       },
@@ -2189,7 +3960,7 @@
         "description": "Exact target population, expressed either inline or by immutable reusable identity.",
         "oneOf": [
           {
-            "$ref": "#/components/schemas/HomologyInlineSearchTarget"
+            "$ref": "#/components/schemas/HomologyDatabaseSearchTarget"
           },
           {
             "$ref": "#/components/schemas/HomologyReusableTargetSpace"
@@ -2236,6 +4007,115 @@
           "eligible_record_count",
           "eligible_residue_count",
           "unknown_record_count"
+        ],
+        "type": "object"
+      },
+      "HomologySemanticProfile": {
+        "additionalProperties": false,
+        "properties": {
+          "alias": {
+            "type": "string"
+          },
+          "comparators": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyResultComparator"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "embedding_dimension": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "encoder_compatibility_class_id": {
+            "type": "string"
+          },
+          "encoder_numerics_id": {
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^hprof_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "is_deterministic": {
+            "type": "boolean"
+          },
+          "object": {
+            "enum": [
+              "homology_semantic_profile"
+            ],
+            "type": "string"
+          },
+          "ranked_unit": {
+            "enum": [
+              "target"
+            ],
+            "type": "string"
+          },
+          "semantic_profile_family_id": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "tie_breaker": {
+            "enum": [
+              "target_ordinal_ascending"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "alias",
+          "sha256",
+          "semantic_profile_family_id",
+          "encoder_numerics_id",
+          "encoder_compatibility_class_id",
+          "embedding_dimension",
+          "ranked_unit",
+          "comparators",
+          "tie_breaker",
+          "is_deterministic"
+        ],
+        "type": "object"
+      },
+      "HomologySemanticProfileList": {
+        "additionalProperties": false,
+        "properties": {
+          "data": {
+            "items": {
+              "$ref": "#/components/schemas/HomologySemanticProfile"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "has_more": {
+            "type": "boolean"
+          },
+          "next_cursor": {
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "list"
+            ],
+            "type": "string"
+          },
+          "url": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object",
+          "url",
+          "data",
+          "has_more"
         ],
         "type": "object"
       },
@@ -2420,6 +4300,52 @@
         ],
         "type": "object"
       },
+      "HomologyTransportCapabilities": {
+        "additionalProperties": false,
+        "properties": {
+          "create_request_headers": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "default_wait_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "is_async_supported": {
+            "type": "boolean"
+          },
+          "is_conditional_polling_supported": {
+            "type": "boolean"
+          },
+          "maximum_wait_seconds": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "response_headers": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "default_wait_seconds",
+          "maximum_wait_seconds",
+          "is_async_supported",
+          "is_conditional_polling_supported",
+          "create_request_headers",
+          "response_headers"
+        ],
+        "type": "object"
+      },
       "Provenance": {
         "additionalProperties": false,
         "properties": {
@@ -2548,8 +4474,1199 @@
   },
   "openapi": "3.1.0",
   "paths": {
-    "/v1/homology": {
+    "/v1/auth/cli/authorize": {
       "get": {
+        "description": "Begins the PKCE sign-in flow for a command-line client. Supply the loopback redirect_uri your CLI is listening on, an opaque state value, and the S256 code_challenge whose verifier you keep locally; the response returns the hosted authorization URL to open in a browser, echoing back the redirect_uri and state to compare on the callback. Only loopback redirect URIs are accepted, so an authorization code can never be delivered off the machine that asked for it.",
+        "operationId": "auth.cli.authorize",
+        "parameters": [
+          {
+            "description": "Loopback URL the CLI listens on.",
+            "explode": false,
+            "in": "query",
+            "name": "redirect_uri",
+            "schema": {
+              "description": "Loopback URL the CLI listens on.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Opaque value echoed back to the CLI.",
+            "explode": false,
+            "in": "query",
+            "name": "state",
+            "schema": {
+              "description": "Opaque value echoed back to the CLI.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "PKCE code challenge.",
+            "explode": false,
+            "in": "query",
+            "name": "code_challenge",
+            "schema": {
+              "description": "PKCE code challenge.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "PKCE challenge method. Defaults to S256.",
+            "explode": false,
+            "in": "query",
+            "name": "code_challenge_method",
+            "schema": {
+              "description": "PKCE challenge method. Defaults to S256.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "AuthKit provider. Defaults to authkit.",
+            "explode": false,
+            "in": "query",
+            "name": "provider",
+            "schema": {
+              "description": "AuthKit provider. Defaults to authkit.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Restrict sign-in to one WorkOS connection.",
+            "explode": false,
+            "in": "query",
+            "name": "connection_id",
+            "schema": {
+              "description": "Restrict sign-in to one WorkOS connection.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Restrict sign-in to one organization.",
+            "explode": false,
+            "in": "query",
+            "name": "organization_id",
+            "schema": {
+              "description": "Restrict sign-in to one organization.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Email to prefill. Ignored when it is not a valid address.",
+            "explode": false,
+            "in": "query",
+            "name": "login_hint",
+            "schema": {
+              "description": "Email to prefill. Ignored when it is not a valid address.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Domain to prefill.",
+            "explode": false,
+            "in": "query",
+            "name": "domain_hint",
+            "schema": {
+              "description": "Domain to prefill.",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthEnvelopeCLIAuthorizeData"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Start a CLI sign-in and return the AuthKit authorization URL.",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/v1/auth/cli/refresh": {
+      "post": {
+        "description": "Trades a refresh token for a new access token and refresh token without another browser round trip, returning the same session payload as the initial exchange. Pass organization_id to move the refreshed session to another organization the signed-in user belongs to. Store the returned refresh token: the presented one is consumed.",
+        "operationId": "auth.cli.refresh",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CLIRefreshRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthEnvelopeCLITokenData"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Refresh a CLI access token.",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/v1/auth/cli/token": {
+      "post": {
+        "description": "Completes the PKCE flow: send the authorization code your loopback callback received together with the code_verifier matching the challenge you started with, and receive an access token, a refresh token, and the identity, organization, role, and entitlements the session carries. The code is single-use, and an exchange without the matching verifier is rejected.",
+        "operationId": "auth.cli.token",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CLITokenRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthEnvelopeCLITokenData"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Set-Cookie": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Exchange a CLI authorization code for an access token.",
+        "tags": [
+          "Auth"
+        ]
+      }
+    },
+    "/v1/homology/batches": {
+      "post": {
+        "description": "Submits up to 100 independent searches with bounded concurrency. The batch changes transport only: every item retains its own policy, target space, significance contract, result set, and receipt.",
+        "operationId": "homology_batches_create",
+        "parameters": [
+          {
+            "description": "Retry identity for the complete transport batch.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "Retry identity for the complete transport batch.",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHomologyBatchRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyBatch"
+                }
+              }
+            },
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyBatch"
+                }
+              }
+            },
+            "description": "Accepted",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyBatch"
+                }
+              }
+            },
+            "description": "Gone",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Create a durable batch of independent homology searches",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/batches/{homology_batch_id}": {
+      "get": {
+        "description": "Returns the durable transport batch while it is retained. Expired batches return 410 rather than being disguised as missing.",
+        "operationId": "homology_batches_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "homology_batch_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyBatch"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyBatch"
+                }
+              }
+            },
+            "description": "Gone",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Retrieve a durable batch of independent homology searches",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/calibrations": {
+      "get": {
+        "description": "Returns immutable significance calibrations matching both caller-supplied scope identities. Discovery never selects a calibration for search.",
+        "operationId": "homology_calibrations_list",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "target_space_id",
+            "required": true,
+            "schema": {
+              "pattern": "^htsp_[0-9a-f]{64}$",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "policy_id",
+            "required": true,
+            "schema": {
+              "minLength": 1,
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyCalibrationList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List calibrations for an exact target space and search policy",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/calibrations/{homology_calibration_id}": {
+      "get": {
+        "description": "Returns one significance calibration: the target space, release, semantic profile, and search policy it is scoped to, the score field it calibrates, the protocol and null-construction identities behind it, the eligible support it was estimated over, and its manifest digest and size. A score outside that support is reported as a null measurement with a typed support status rather than extrapolated.",
+        "operationId": "homology_calibrations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "homology_calibration_id",
+            "required": true,
+            "schema": {
+              "pattern": "^cal_[0-9a-f]{64}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyCalibration"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Retrieve one immutable homology calibration",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/capabilities": {
+      "get": {
+        "description": "Returns authenticated-principal transport, paging, batch, retention, and request ceilings. Release-dependent scientific semantics remain on immutable release resources.",
+        "operationId": "homology_capabilities_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyCapabilities"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Retrieve effective homology transport and request capabilities",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/databases": {
+      "get": {
+        "description": "Returns one cursor page of the homology databases available to search, each with its molecule type, the query kinds it accepts, the evidence it can return, and the immutable release its default alias resolves to when one is published. A search always executes against a release id, never against a mutable alias.",
+        "operationId": "homology_databases_list",
+        "parameters": [
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyDatabaseList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List searchable homology databases",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/databases/{database_id}/releases": {
+      "get": {
+        "description": "Returns one cursor page of a database's immutable releases, ordered by release id, each with its record and residue counts, its aliases, and the release-owned capability contract naming the search policies and evidence it can serve. A release id always identifies the same searched content. A release whose capability cannot currently be resolved is reported as unavailable with a warning rather than dropped from the page.",
+        "operationId": "homology_database_releases_list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "database_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "ending_before",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyDatabaseReleaseList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List the immutable releases of a homology database",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/policies": {
+      "get": {
+        "description": "Returns one cursor page of the search policy ids releases advertise. Each entry names the releases that execute the policy, the semantic profiles and policy contracts it binds to, the benchmark evaluations that describe it, and the releases that select it by default. Pass database_release_id to see only the policies one release accepts.",
+        "operationId": "homology_policies_list",
+        "parameters": [
+          {
+            "description": "Optional immutable release filter.",
+            "explode": false,
+            "in": "query",
+            "name": "database_release_id",
+            "schema": {
+              "description": "Optional immutable release filter.",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyPolicyList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List release-advertised homology search policy ids",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/policies/{homology_policy_id}": {
+      "get": {
+        "description": "Returns the immutable compatibility contract of one search policy id: its digest, the releases that execute it, the semantic profiles and policy contracts it binds to, the benchmark evidence published for it, and the releases it is the default for. A policy states which searches may run against which releases; the ranked meaning of a result is fixed by the semantic profile instead.",
+        "operationId": "homology_policies_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "homology_policy_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyPolicy"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Retrieve release compatibility for a homology search policy id",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/releases/{database_release_id}/filter-schema": {
+      "get": {
+        "description": "Returns the metadata fields a target-space filter may reference on one immutable release, with each field's type and permitted operators, the search policies the schema applies to, and the size limits a filter expression must stay within. A record missing a referenced field evaluates as unknown under strong-Kleene semantics rather than silently as false.",
+        "operationId": "homology_filter_schemas_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "database_release_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyFilterSchema"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Retrieve the metadata filter schema of a homology release",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/search-evaluations": {
+      "get": {
+        "description": "Returns one cursor page of frozen benchmark evidence, filterable by release, semantic profile, search policy, or target space. Each entry states the benchmark and baseline it measured, how many queries and independent homology groups it covers, and its promotion decision. Evaluation evidence is scoped to a benchmark, never to an individual query or an individual returned hit.",
+        "operationId": "homology_search_evaluations_list",
+        "parameters": [
+          {
+            "description": "Optional immutable release filter.",
+            "explode": false,
+            "in": "query",
+            "name": "database_release_id",
+            "schema": {
+              "description": "Optional immutable release filter.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional hprof_ semantic-profile filter.",
+            "explode": false,
+            "in": "query",
+            "name": "semantic_profile_id",
+            "schema": {
+              "description": "Optional hprof_ semantic-profile filter.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional immutable search-policy filter.",
+            "explode": false,
+            "in": "query",
+            "name": "search_policy_id",
+            "schema": {
+              "description": "Optional immutable search-policy filter.",
+              "type": "string"
+            }
+          },
+          {
+            "description": "Optional exact htsp_ target-space filter.",
+            "explode": false,
+            "in": "query",
+            "name": "target_space_id",
+            "schema": {
+              "description": "Optional exact htsp_ target-space filter.",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologySearchEvaluationList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List immutable benchmark evidence for homology search policies",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/search-evaluations/{homology_search_evaluation_id}": {
+      "get": {
+        "description": "Returns one frozen evaluation: the exact release, semantic profile, and search-policy scope it measured, the benchmark and baseline identities, the filter selectivity and distribution class it covers, its typed measurements, and its promotion decision. It is evidence about a scope, not confidence in a query you are about to run.",
+        "operationId": "homology_search_evaluations_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "homology_search_evaluation_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologySearchEvaluation"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "Retrieve immutable benchmark evidence for one homology search policy",
+        "tags": [
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/searches": {
+      "get": {
+        "description": "Returns one cursor page of the searches retained for the authenticated principal, most recently created first, each with its current status, its immutable release and policy receipts, and its result-set summary. Searches past their retention window are not listed; retrieving one by id still reports its expiry explicitly.",
         "operationId": "homology_list",
         "parameters": [
           {
@@ -2726,6 +5843,43 @@
               }
             }
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologySearch"
+                }
+              }
+            },
+            "description": "Gone",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Preference-Applied": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "default": {
             "content": {
               "application/problem+json": {
@@ -2743,9 +5897,9 @@
         ]
       }
     },
-    "/v1/homology/{homology_search_id}": {
+    "/v1/homology/searches/{homology_search_id}": {
       "get": {
-        "description": "Returns current status, immutable release and policy receipts, and the result-set summary. Supports conditional polling with If-None-Match.",
+        "description": "Returns current status, immutable release and policy receipts, and the result-set summary. Supports conditional polling with If-None-Match. Expired searches return 410 with the deletion receipt identity when physical deletion has completed.",
         "operationId": "homology_get",
         "parameters": [
           {
@@ -2789,6 +5943,38 @@
               }
             }
           },
+          "304": {
+            "description": "Not Modified",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologySearch"
+                }
+              }
+            },
+            "description": "Gone",
+            "headers": {
+              "ETag": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "default": {
             "content": {
               "application/problem+json": {
@@ -2806,9 +5992,9 @@
         ]
       }
     },
-    "/v1/homology/{homology_search_id}/results": {
+    "/v1/homology/searches/{homology_search_id}/results": {
       "get": {
-        "description": "Pages the stable ranked results of a completed homology search. Each result carries typed measurements and provenance.",
+        "description": "Pages the stable ranked results of a completed homology search. Each result carries typed measurements and provenance. Expired result sets return 410.",
         "operationId": "homology_results",
         "parameters": [
           {
@@ -2868,6 +6054,33 @@
               }
             }
           },
+          "410": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologySearchResultList"
+                }
+              }
+            },
+            "description": "Gone",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
           "default": {
             "content": {
               "application/problem+json": {
@@ -2885,8 +6098,9 @@
         ]
       }
     },
-    "/v1/homology/{homology_search_id}/results.csv": {
+    "/v1/homology/searches/{homology_search_id}/results.csv": {
       "get": {
+        "description": "Returns every result of a completed search as one content-addressed CSV attachment, in the same stable ranked order as the paged results and with one column per typed measurement. The representation is immutable and carries a strong ETag, so If-None-Match makes a repeat download a 304. Expired result sets return 410 rather than an empty export.",
         "operationId": "homology_results_export_csv",
         "parameters": [
           {
@@ -2957,7 +6171,7 @@
               }
             }
           },
-          "default": {
+          "404": {
             "content": {
               "application/problem+json": {
                 "schema": {
@@ -2965,7 +6179,47 @@
                 }
               }
             },
-            "description": "Error"
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "410": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Gone"
+          },
+          "422": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "500": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
           }
         },
         "summary": "Export all immutable homology results as CSV",
@@ -2974,9 +6228,10 @@
         ]
       }
     },
-    "/v1/homology_databases": {
+    "/v1/homology/semantic-profiles": {
       "get": {
-        "operationId": "homology_databases_list",
+        "description": "Returns one cursor page of the semantic profiles releases can select. A profile fixes the scientific meaning of a search — the embedding contract results are comparable within, the ranked unit, the ordered comparators, and the tie-breaker — and deliberately exposes no retrieval or execution settings.",
+        "operationId": "homology_semantic_profiles_list",
         "parameters": [
           {
             "explode": false,
@@ -2997,14 +6252,6 @@
             "schema": {
               "type": "string"
             }
-          },
-          {
-            "explode": false,
-            "in": "query",
-            "name": "ending_before",
-            "schema": {
-              "type": "string"
-            }
           }
         ],
         "responses": {
@@ -3012,7 +6259,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EnvelopeHomologyDatabaseList"
+                  "$ref": "#/components/schemas/EnvelopeHomologySemanticProfileList"
                 }
               }
             },
@@ -3046,105 +6293,20 @@
             "description": "Error"
           }
         },
-        "summary": "Homology databases list",
+        "summary": "List immutable homology semantic and ranking contracts",
         "tags": [
-          "Homology databases"
+          "Homology"
         ]
       }
     },
-    "/v1/homology_databases/{database_id}/releases": {
+    "/v1/homology/semantic-profiles/{homology_semantic_profile_id}": {
       "get": {
-        "operationId": "homology_database_releases_list",
+        "description": "Returns one immutable semantic profile: its alias and digest, the encoder compatibility class and embedding dimension results are comparable within, the ordered comparators that define the ranking, the tie-breaker applied to equal scores, and whether the resulting order is deterministic. Scores and ranks are comparable only across searches that share a semantic profile id.",
+        "operationId": "homology_semantic_profiles_get",
         "parameters": [
           {
             "in": "path",
-            "name": "database_id",
-            "required": true,
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "explode": false,
-            "in": "query",
-            "name": "limit",
-            "schema": {
-              "default": 20,
-              "format": "int64",
-              "maximum": 100,
-              "minimum": 1,
-              "type": "integer"
-            }
-          },
-          {
-            "explode": false,
-            "in": "query",
-            "name": "starting_after",
-            "schema": {
-              "type": "string"
-            }
-          },
-          {
-            "explode": false,
-            "in": "query",
-            "name": "ending_before",
-            "schema": {
-              "type": "string"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EnvelopeHomologyDatabaseReleaseList"
-                }
-              }
-            },
-            "description": "OK",
-            "headers": {
-              "Rafflesia-Contract-Digest": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Rafflesia-Version": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "X-Request-ID": {
-                "schema": {
-                  "type": "string"
-                }
-              }
-            }
-          },
-          "default": {
-            "content": {
-              "application/problem+json": {
-                "schema": {
-                  "$ref": "#/components/schemas/ErrorModel"
-                }
-              }
-            },
-            "description": "Error"
-          }
-        },
-        "summary": "Homology database releases list",
-        "tags": [
-          "Homology databases"
-        ]
-      }
-    },
-    "/v1/homology_releases/{database_release_id}/filter_schema": {
-      "get": {
-        "operationId": "homology_filter_schemas_get",
-        "parameters": [
-          {
-            "in": "path",
-            "name": "database_release_id",
+            "name": "homology_semantic_profile_id",
             "required": true,
             "schema": {
               "type": "string"
@@ -3156,7 +6318,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/EnvelopeHomologyFilterSchema"
+                  "$ref": "#/components/schemas/EnvelopeHomologySemanticProfile"
                 }
               }
             },
@@ -3190,13 +6352,13 @@
             "description": "Error"
           }
         },
-        "summary": "Homology filter schemas get",
+        "summary": "Retrieve one immutable homology semantic and ranking contract",
         "tags": [
-          "Homology releases"
+          "Homology"
         ]
       }
     },
-    "/v1/homology_target_space_compilations": {
+    "/v1/homology/target-space-compilations": {
       "post": {
         "description": "Compiles a release-bound metadata filter into reusable immutable eligibility. Equal canonical inputs identify the same target space.",
         "operationId": "homology_target_space_compilations_create",
@@ -3300,12 +6462,13 @@
         },
         "summary": "Compile an immutable homology target space",
         "tags": [
-          "Homology target space compilations"
+          "Homology"
         ]
       }
     },
-    "/v1/homology_target_space_compilations/{homology_target_space_compilation_id}": {
+    "/v1/homology/target-space-compilations/{homology_target_space_compilation_id}": {
       "get": {
+        "description": "Returns the status of one compilation and, once it is complete, the id of the immutable target space it produced. Poll this resource after an accepted compilation request. The canonical filter digest it echoes lets a caller confirm the compilation belongs to the filter they submitted.",
         "operationId": "homology_target_space_compilations_get",
         "parameters": [
           {
@@ -3357,14 +6520,15 @@
             "description": "Error"
           }
         },
-        "summary": "Retrieve target-space compilation status",
+        "summary": "Retrieve a homology target-space compilation",
         "tags": [
-          "Homology target space compilations"
+          "Homology"
         ]
       }
     },
-    "/v1/homology_target_spaces/{homology_target_space_id}": {
+    "/v1/homology/target-spaces/{homology_target_space_id}": {
       "get": {
+        "description": "Returns the exact searched universe a target space defines: the release, corpus snapshot, and semantic profile it is bound to, the canonical filter it was compiled from, and the eligible record and residue counts that database-aware significance is computed against. The same canonical filter on the same release always resolves to the same target space id, so a target space can be reused across searches and cited in results.",
         "operationId": "homology_target_spaces_get",
         "parameters": [
           {
@@ -3418,7 +6582,95 @@
         },
         "summary": "Retrieve an immutable reusable homology target space",
         "tags": [
-          "Homology target spaces"
+          "Homology"
+        ]
+      }
+    },
+    "/v1/homology/target-spaces/{homology_target_space_id}/calibrations": {
+      "get": {
+        "description": "Returns one cursor page of the calibrations scoped to one immutable target space, optionally narrowed to a single search policy. Discovery reports which calibrations exist; choosing one for a search stays an explicit caller decision.",
+        "operationId": "homology_target_space_calibrations_list",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "homology_target_space_id",
+            "required": true,
+            "schema": {
+              "pattern": "^htsp_[0-9a-f]{64}$",
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "policy_id",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "limit",
+            "schema": {
+              "default": 20,
+              "format": "int64",
+              "maximum": 100,
+              "minimum": 1,
+              "type": "integer"
+            }
+          },
+          {
+            "explode": false,
+            "in": "query",
+            "name": "starting_after",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyCalibrationList"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "default": {
+            "content": {
+              "application/problem+json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Error"
+          }
+        },
+        "summary": "List calibrations compatible with an immutable target space",
+        "tags": [
+          "Homology"
         ]
       }
     }

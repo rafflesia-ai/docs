@@ -1,95 +1,45 @@
 ---
 title: CLI overview
-description: Global flags, JSON output, field selection, and the exit-code contract of the rafflesia CLI.
+description: Install and use the canonical rafflesia CLI for the curated public API.
 ---
 
-`rafflesia` is a headless biological evidence CLI. It parses flags, calls the
-API, prints a JSON envelope, and exits. There is no local state beyond your
-credential, and no command interprets results for you.
+`rafflesia` is the command-line client for the public Rafflesia API. It is a
+thin host over the generated Go SDK, so its request and response types come from
+the same curated OpenAPI contract as the other public SDKs.
 
 ```bash
 curl -fsSL https://rafflesia.ai/install.sh | sh
+rafflesia --help
 ```
 
 ## Global flags
 
-Every command accepts these:
-
 | Flag | Purpose |
 | --- | --- |
-| `--server <url>` | API base URL. Defaults to the server recorded by `auth login`, else `http://127.0.0.1:8081`. |
-| `--api-key <key>` | API key for this invocation. |
-| `--json` | Print the raw JSON envelope instead of the human rendering. |
-| `--print <path>` | Print one field. Dotted path; numeric segments index arrays, e.g. `data.documents.0.markdown`. |
-| `--output <path>` | Write the response body to a file and print only output metadata. |
-| `--quiet` | Suppress stdout for commands that would otherwise print a response. |
-| `--explain` | Add CLI execution measurements to the envelope. |
+| `--server <url>` | Override the API base URL. |
+| `--api-key <key>` | Override the stored key and `RAFFLESIA_API_KEY`. |
+| `--access-token <token>` | Override the stored OAuth token and `RAFFLESIA_ACCESS_TOKEN`. |
+| `--json` | Print the raw response envelope. |
 
-## Human output vs. JSON
-
-By default commands render a compact human view. Anything programmatic should
-pass `--json` and read the [envelope](/concepts/primitives):
-
-```bash
-rafflesia proteins confidence summary 1IEP --chain A --json
-```
-
-`--print` avoids a `jq` dependency for single values:
-
-```bash
-rafflesia sequences records fetch P00533 --print data.sequence.length
-```
-
-`--output` keeps large payloads off your terminal — the file gets the body, and
-stdout gets the metadata (path, byte count, digest):
-
-```bash
-rafflesia proteins structures fetch 1IEP --source pdb --output 1iep.json
-```
+Credential precedence is command flag, environment variable, then the value
+stored by `rafflesia auth login`. Access tokens take precedence over API keys
+at the environment layer. Supplying both credential flags is an error. Without
+a server override, the CLI uses `https://api.rafflesia.ai`.
 
 ## Environment variables
 
 | Variable | Effect |
 | --- | --- |
-| `RAFFLESIA_API_BASE_URL` | API base URL. Wins over the server recorded by `auth login`. |
-| `RAFFLESIA_API_KEY` | API key used when `--api-key` is absent. |
-| `RAFFLESIA_ACCESS_TOKEN` | Pre-minted access token, for CI that already holds one. |
-| `RAFFLESIA_CLI_TIMEOUT` | HTTP timeout as a Go duration (default `30m`, sized for long jobs). |
+| `RAFFLESIA_API_BASE_URL` | API base URL when `--server` is absent. |
+| `RAFFLESIA_API_KEY` | API key when `--api-key` is absent. |
+| `RAFFLESIA_ACCESS_TOKEN` | Bearer access token when `--access-token` is absent. |
+| `RAFFLESIA_CONFIG_PATH` | Exact credential-file path for isolated automation. |
 
-Server resolution order is `--server`, then `RAFFLESIA_API_BASE_URL`, then the
-server recorded by `auth login`, then the local default.
+## Output and exit status
 
-## Exit codes
+Homology creation and retrieval print a compact id/status line by default.
+Homology results and every command invoked with `--json` print the generated
+SDK response envelope as JSON.
 
-The exit-code contract is deliberately narrow:
-
-- **`0`** — the command succeeded.
-- **`1`** — anything else: flag validation, transport failure, or a structured
-  envelope error.
-
-Failure detail is carried in the printed envelope and on stderr — the stable
-`error.type`, `error.code`, `message`, and `doc_url` — not encoded in distinct
-exit statuses. Scripts should branch on `error.code`, not on the exit value.
-
-```bash
-if ! out=$(rafflesia proteins structures fetch 1IEP --json 2>err.txt); then
-  code=$(jq -r '.error.code' <<<"$out" 2>/dev/null || echo unknown)
-  echo "failed: $code"
-fi
-```
-
-## Idempotency
-
-Mutating operations accept an idempotency key so a retry after a timeout cannot
-create a second job or a second object. Over HTTP that is the
-`Idempotency-Key` header; the job-submitting CLI commands manage it for you.
-
-## Update notices
-
-The CLI checks for newer releases in the background and prints a one-line notice
-to stderr after a command completes. It never blocks the command, and it is inert
-on non-TTY stderr and in CI. Check explicitly with:
-
-```bash
-rafflesia update
-```
+The CLI exits `0` on success and `1` for flag validation, transport, or API
+errors.
