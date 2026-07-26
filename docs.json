@@ -1,6 +1,6 @@
 {
   "$schema": "https://mintlify.com/docs.json",
-  "theme": "maple",
+  "theme": "linden",
   "name": "Rafflesia",
   "description": "Protein homology search over immutable database releases.",
   "colors": {
@@ -39,8 +39,8 @@
     "href": "https://rafflesia.ai"
   },
   "favicon": {
-    "light": "/favicon/light.svg",
-    "dark": "/favicon/dark.svg"
+    "light": "/favicon/light.png",
+    "dark": "/favicon/dark.png"
   },
   "navigation": {
     "tabs": [

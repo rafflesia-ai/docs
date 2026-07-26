@@ -1,6 +1,361 @@
 {
   "components": {
     "schemas": {
+      "APIError": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "description": "Stable specific error code.",
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": {},
+            "description": "Additional structured error details.",
+            "type": "object"
+          },
+          "doc_url": {
+            "description": "Stable documentation URL for this error code.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Human-readable error message.",
+            "type": "string"
+          },
+          "param": {
+            "description": "Request field responsible for the error when known.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Stable coarse error category.",
+            "enum": [
+              "invalid_request_error",
+              "resource_missing",
+              "resource_expired",
+              "conflict_error",
+              "rate_limit_error",
+              "authentication_error",
+              "permission_error",
+              "billing_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "code",
+          "message",
+          "doc_url"
+        ],
+        "type": "object"
+      },
+      "DatabaseSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "digest": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "version"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyDatabaseList": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyDatabaseList.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyDatabaseList",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyDatabaseReleaseList": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyDatabaseReleaseList.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyDatabaseReleaseList",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyResponse": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyResponse.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyResponse",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "ErrorDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "location": {
+            "description": "Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'",
+            "type": "string"
+          },
+          "message": {
+            "description": "Error message text",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value at the given location"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorModel": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/ErrorModel.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation specific to this occurrence of the problem.",
+            "examples": [
+              "Property foo is required but is missing."
+            ],
+            "type": "string"
+          },
+          "errors": {
+            "description": "Optional list of individual error details",
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "instance": {
+            "description": "A URI reference that identifies the specific occurrence of the problem.",
+            "examples": [
+              "https://example.com/error-log/abc123"
+            ],
+            "format": "uri",
+            "type": "string"
+          },
+          "status": {
+            "description": "HTTP status code",
+            "examples": [
+              400
+            ],
+            "format": "int64",
+            "type": "integer"
+          },
+          "title": {
+            "description": "A short, human-readable summary of the problem type. This value should not change between occurrences of the error.",
+            "examples": [
+              "Bad Request"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "default": "about:blank",
+            "description": "A URI reference to human-readable documentation for the error.",
+            "examples": [
+              "https://example.com/errors/example"
+            ],
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EvidenceSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "duration_ms": {
+            "description": "Primary elapsed duration in milliseconds when the response exposes one.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_refs": {
+            "description": "Input references detected from request fields such as object_id, structure_id, target_id, and sequence_id.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "object_refs": {
+            "description": "Object ids or object refs visible in the response/provenance.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "output_refs": {
+            "description": "Output references detected from response data and generated objects.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "row_count": {
+            "description": "Primary row count or returned row count when the response exposes one.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "warnings_count": {
+            "description": "Number of non-fatal warnings in the envelope.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "warnings_count"
+        ],
+        "type": "object"
+      },
       "HomologyAffineMeasurements": {
         "additionalProperties": false,
         "properties": {
@@ -83,15 +438,6 @@
       "HomologyDatabaseList": {
         "additionalProperties": false,
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/HomologyDatabaseList.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "data": {
             "items": {
               "$ref": "#/components/schemas/HomologyDatabase"
@@ -197,15 +543,6 @@
       "HomologyDatabaseReleaseList": {
         "additionalProperties": false,
         "properties": {
-          "$schema": {
-            "description": "A URL to the JSON Schema for this object.",
-            "examples": [
-              "https://example.com/schemas/HomologyDatabaseReleaseList.json"
-            ],
-            "format": "uri",
-            "readOnly": true,
-            "type": "string"
-          },
           "data": {
             "items": {
               "$ref": "#/components/schemas/HomologyDatabaseRelease"
@@ -355,18 +692,6 @@
         },
         "required": [
           "op"
-        ],
-        "type": "object"
-      },
-      "HomologyErrorResponse": {
-        "additionalProperties": false,
-        "properties": {
-          "error": {
-            "$ref": "#/components/schemas/HomologyPublicError"
-          }
-        },
-        "required": [
-          "error"
         ],
         "type": "object"
       },
@@ -929,107 +1254,6 @@
         ],
         "type": "object"
       },
-      "HomologyMultiQueryResponse": {
-        "additionalProperties": false,
-        "properties": {
-          "database": {
-            "$ref": "#/components/schemas/HomologyResponseDatabase"
-          },
-          "is_result_limit_reached": {
-            "type": "boolean"
-          },
-          "method": {
-            "$ref": "#/components/schemas/HomologyResponseMethod"
-          },
-          "query": {
-            "$ref": "#/components/schemas/HomologyResponseQuery"
-          },
-          "query_index": {
-            "format": "int64",
-            "minimum": 0,
-            "type": "integer"
-          },
-          "result_sha256": {
-            "type": "string"
-          },
-          "results": {
-            "items": {
-              "$ref": "#/components/schemas/HomologyResult"
-            },
-            "type": "array"
-          },
-          "usage": {
-            "$ref": "#/components/schemas/HomologyResponseUsage"
-          },
-          "warnings": {
-            "items": {
-              "$ref": "#/components/schemas/Warning"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "query_index",
-          "query",
-          "database",
-          "method",
-          "results",
-          "is_result_limit_reached",
-          "result_sha256",
-          "usage",
-          "warnings"
-        ],
-        "type": "object"
-      },
-      "HomologyMultiResponse": {
-        "additionalProperties": false,
-        "properties": {
-          "performance": {
-            "$ref": "#/components/schemas/HomologyResponsePerformance"
-          },
-          "request_id": {
-            "type": "string"
-          },
-          "responses": {
-            "items": {
-              "$ref": "#/components/schemas/HomologyMultiQueryResponse"
-            },
-            "maxItems": 16,
-            "minItems": 1,
-            "type": [
-              "array",
-              "null"
-            ]
-          },
-          "result_sha256": {
-            "type": "string"
-          },
-          "usage": {
-            "$ref": "#/components/schemas/HomologyResponseUsage"
-          },
-          "warnings": {
-            "items": {
-              "$ref": "#/components/schemas/Warning"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
-          }
-        },
-        "required": [
-          "request_id",
-          "responses",
-          "result_sha256",
-          "usage",
-          "performance",
-          "warnings"
-        ],
-        "type": "object"
-      },
       "HomologyPairwiseAlignment": {
         "additionalProperties": false,
         "properties": {
@@ -1110,126 +1334,224 @@
         ],
         "type": "object"
       },
-      "HomologyPublicError": {
-        "additionalProperties": false,
-        "properties": {
-          "code": {
-            "type": "string"
-          },
-          "details": {
-            "additionalProperties": {},
-            "type": "object"
-          },
-          "doc_url": {
-            "type": "string"
-          },
-          "message": {
-            "type": "string"
-          },
-          "param": {
-            "type": "string"
-          },
-          "request_id": {
-            "type": "string"
-          },
-          "type": {
-            "enum": [
-              "invalid_request_error",
-              "resource_missing",
-              "resource_expired",
-              "conflict_error",
-              "rate_limit_error",
-              "authentication_error",
-              "permission_error",
-              "billing_error",
-              "api_error"
-            ],
-            "type": "string"
-          }
-        },
-        "required": [
-          "type",
-          "code",
-          "message",
-          "request_id",
-          "doc_url"
-        ],
-        "type": "object"
-      },
-      "HomologyQuery": {
-        "discriminator": {
-          "mapping": {
-            "protein_sequence": "#/components/schemas/ProteinSequenceQuery"
-          },
-          "propertyName": "kind"
-        },
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/ProteinSequenceQuery"
-          }
-        ]
-      },
       "HomologyRequest": {
         "additionalProperties": false,
-        "allOf": [
+        "oneOf": [
           {
-            "oneOf": [
-              {
-                "not": {
-                  "required": [
-                    "database_release_id"
-                  ],
-                  "type": "object"
-                },
-                "required": [
-                  "database"
+            "additionalProperties": false,
+            "properties": {
+              "$schema": {
+                "description": "A URL to the JSON Schema for this object.",
+                "examples": [
+                  "https://example.com/schemas/HomologyRequest.json"
                 ],
-                "type": "object"
+                "format": "uri",
+                "readOnly": true,
+                "type": "string"
               },
-              {
-                "not": {
-                  "required": [
-                    "database"
-                  ],
-                  "type": "object"
-                },
-                "required": [
-                  "database_release_id"
+              "database": {
+                "description": "Database id or slug from homology.databases.list. Exactly one of database or database_release_id is required.",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string"
+              },
+              "database_release_id": {
+                "maxLength": 0,
+                "type": "string"
+              },
+              "filter": {
+                "$ref": "#/components/schemas/HomologyDocumentFilter",
+                "description": "Optional exact metadata predicate applied before candidate generation."
+              },
+              "guarantee": {
+                "default": "approximate",
+                "description": "Minimum search guarantee. Approximate permits a qualified approximate policy or a stronger exhaustive fallback; exhaustive requires the release's exhaustive reference policy.",
+                "enum": [
+                  "approximate",
+                  "exhaustive"
                 ],
-                "type": "object"
+                "type": "string"
+              },
+              "include": {
+                "default": [
+                  "alignment"
+                ],
+                "description": "Scientific result representations to return. Pairwise alignment is included by default. Pass an empty array for candidate measurements only.",
+                "items": {
+                  "enum": [
+                    "alignment"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "include_attributes": {
+                "description": "Optional target attributes to project. The current Tomato catalog can project record_id; unsupported attributes are rejected instead of fabricated.",
+                "items": {
+                  "enum": [
+                    "record_id"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 1,
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "uniqueItems": true
+              },
+              "limit": {
+                "default": 25,
+                "description": "Maximum number of ranked results to return.",
+                "format": "int64",
+                "maximum": 10000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "max_billable_units": {
+                "description": "Optional hard ceiling on deterministic billable work. The search fails before exceeding it.",
+                "format": "int64",
+                "minimum": 1,
+                "type": "integer"
+              },
+              "sequence": {
+                "description": "Raw amino-acid sequence text. ASCII whitespace is ignored, letters are uppercased, and one trailing stop symbol is removed. The normalized sequence may contain at most 100,000 residues.",
+                "maxLength": 110000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "significance": {
+                "default": "not_requested",
+                "description": "Whether database-aware significance is omitted, included when a compatible calibration exists, or required for the request to succeed.",
+                "enum": [
+                  "not_requested",
+                  "if_available",
+                  "required"
+                ],
+                "type": "string"
               }
-            ]
+            },
+            "required": [
+              "sequence",
+              "database"
+            ],
+            "type": "object"
           },
           {
-            "oneOf": [
-              {
-                "not": {
-                  "required": [
-                    "queries"
-                  ],
-                  "type": "object"
-                },
-                "required": [
-                  "query"
+            "additionalProperties": false,
+            "properties": {
+              "$schema": {
+                "description": "A URL to the JSON Schema for this object.",
+                "examples": [
+                  "https://example.com/schemas/HomologyRequest.json"
                 ],
-                "type": "object"
+                "format": "uri",
+                "readOnly": true,
+                "type": "string"
               },
-              {
-                "not": {
-                  "required": [
-                    "query"
-                  ],
-                  "type": "object"
-                },
-                "required": [
-                  "queries"
+              "database": {
+                "maxLength": 0,
+                "type": "string"
+              },
+              "database_release_id": {
+                "description": "Exact immutable release id. Exactly one of database or database_release_id is required.",
+                "maxLength": 256,
+                "minLength": 1,
+                "type": "string"
+              },
+              "filter": {
+                "$ref": "#/components/schemas/HomologyDocumentFilter",
+                "description": "Optional exact metadata predicate applied before candidate generation."
+              },
+              "guarantee": {
+                "default": "approximate",
+                "description": "Minimum search guarantee. Approximate permits a qualified approximate policy or a stronger exhaustive fallback; exhaustive requires the release's exhaustive reference policy.",
+                "enum": [
+                  "approximate",
+                  "exhaustive"
                 ],
-                "type": "object"
+                "type": "string"
+              },
+              "include": {
+                "default": [
+                  "alignment"
+                ],
+                "description": "Scientific result representations to return. Pairwise alignment is included by default. Pass an empty array for candidate measurements only.",
+                "items": {
+                  "enum": [
+                    "alignment"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 1,
+                "type": "array",
+                "uniqueItems": true
+              },
+              "include_attributes": {
+                "description": "Optional target attributes to project. The current Tomato catalog can project record_id; unsupported attributes are rejected instead of fabricated.",
+                "items": {
+                  "enum": [
+                    "record_id"
+                  ],
+                  "type": "string"
+                },
+                "maxItems": 1,
+                "type": [
+                  "array",
+                  "null"
+                ],
+                "uniqueItems": true
+              },
+              "limit": {
+                "default": 25,
+                "description": "Maximum number of ranked results to return.",
+                "format": "int64",
+                "maximum": 10000,
+                "minimum": 1,
+                "type": "integer"
+              },
+              "max_billable_units": {
+                "description": "Optional hard ceiling on deterministic billable work. The search fails before exceeding it.",
+                "format": "int64",
+                "minimum": 1,
+                "type": "integer"
+              },
+              "sequence": {
+                "description": "Raw amino-acid sequence text. ASCII whitespace is ignored, letters are uppercased, and one trailing stop symbol is removed. The normalized sequence may contain at most 100,000 residues.",
+                "maxLength": 110000,
+                "minLength": 1,
+                "type": "string"
+              },
+              "significance": {
+                "default": "not_requested",
+                "description": "Whether database-aware significance is omitted, included when a compatible calibration exists, or required for the request to succeed.",
+                "enum": [
+                  "not_requested",
+                  "if_available",
+                  "required"
+                ],
+                "type": "string"
               }
-            ]
+            },
+            "required": [
+              "sequence",
+              "database_release_id"
+            ],
+            "type": "object"
           }
         ],
         "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/HomologyRequest.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
           "database": {
             "description": "Database id or slug from homology.databases.list. Exactly one of database or database_release_id is required.",
             "maxLength": 256,
@@ -1299,24 +1621,14 @@
             "minimum": 1,
             "type": "integer"
           },
-          "queries": {
-            "description": "An ordered batch of 1 to 16 typed biological queries sharing every search control. Exactly one of query and queries is required.",
-            "items": {
-              "$ref": "#/components/schemas/HomologyQuery"
-            },
-            "maxItems": 16,
-            "minItems": 1,
-            "type": [
-              "array",
-              "null"
-            ]
-          },
-          "query": {
-            "$ref": "#/components/schemas/HomologyQuery",
-            "description": "One typed biological query. Exactly one of query and queries is required."
+          "sequence": {
+            "description": "Raw amino-acid sequence text. ASCII whitespace is ignored, letters are uppercased, and one trailing stop symbol is removed. The normalized sequence may contain at most 100,000 residues.",
+            "maxLength": 110000,
+            "minLength": 1,
+            "type": "string"
           },
           "significance": {
-            "default": "if_available",
+            "default": "not_requested",
             "description": "Whether database-aware significance is omitted, included when a compatible calibration exists, or required for the request to succeed.",
             "enum": [
               "not_requested",
@@ -1326,6 +1638,9 @@
             "type": "string"
           }
         },
+        "required": [
+          "sequence"
+        ],
         "type": "object"
       },
       "HomologyResponse": {
@@ -1341,14 +1656,8 @@
           "method": {
             "$ref": "#/components/schemas/HomologyResponseMethod"
           },
-          "performance": {
-            "$ref": "#/components/schemas/HomologyResponsePerformance"
-          },
           "query": {
             "$ref": "#/components/schemas/HomologyResponseQuery"
-          },
-          "request_id": {
-            "type": "string"
           },
           "result_sha256": {
             "type": "string"
@@ -1361,28 +1670,16 @@
           },
           "usage": {
             "$ref": "#/components/schemas/HomologyResponseUsage"
-          },
-          "warnings": {
-            "items": {
-              "$ref": "#/components/schemas/Warning"
-            },
-            "type": [
-              "array",
-              "null"
-            ]
           }
         },
         "required": [
-          "request_id",
           "query",
           "database",
           "method",
           "results",
           "is_result_limit_reached",
           "result_sha256",
-          "usage",
-          "performance",
-          "warnings"
+          "usage"
         ],
         "type": "object"
       },
@@ -1466,46 +1763,9 @@
         ],
         "type": "object"
       },
-      "HomologyResponsePerformance": {
-        "additionalProperties": false,
-        "properties": {
-          "is_cache_hit": {
-            "description": "Whether the completed scientific result was reused from a prior identical execution.",
-            "type": "boolean"
-          },
-          "queue_wait_ms": {
-            "description": "Time spent waiting for execution capacity, in integer milliseconds.",
-            "format": "int64",
-            "type": "integer"
-          },
-          "search_execution_ms": {
-            "description": "Time spent executing the resolved search, in integer milliseconds.",
-            "format": "int64",
-            "type": "integer"
-          },
-          "server_total_ms": {
-            "description": "Total time spent serving the request, in integer milliseconds, including queueing.",
-            "format": "int64",
-            "type": "integer"
-          }
-        },
-        "required": [
-          "server_total_ms",
-          "queue_wait_ms",
-          "search_execution_ms",
-          "is_cache_hit"
-        ],
-        "type": "object"
-      },
       "HomologyResponseQuery": {
         "additionalProperties": false,
         "properties": {
-          "kind": {
-            "enum": [
-              "protein_sequence"
-            ],
-            "type": "string"
-          },
           "normalization_id": {
             "type": "string"
           },
@@ -1518,7 +1778,6 @@
           }
         },
         "required": [
-          "kind",
           "normalized_length",
           "normalization_id",
           "sha256"
@@ -1654,16 +1913,6 @@
         ],
         "type": "object"
       },
-      "HomologySearchResponse": {
-        "oneOf": [
-          {
-            "$ref": "#/components/schemas/HomologyResponse"
-          },
-          {
-            "$ref": "#/components/schemas/HomologyMultiResponse"
-          }
-        ]
-      },
       "HomologySignificanceMeasurements": {
         "additionalProperties": false,
         "properties": {
@@ -1715,25 +1964,92 @@
         ],
         "type": "object"
       },
-      "ProteinSequenceQuery": {
+      "Provenance": {
         "additionalProperties": false,
         "properties": {
-          "kind": {
-            "enum": [
-              "protein_sequence"
-            ],
+          "cache_hit": {
+            "description": "Whether cached output was reused.",
+            "type": "boolean"
+          },
+          "created_at": {
+            "description": "UTC timestamp.",
             "type": "string"
           },
-          "sequence": {
-            "description": "Raw amino-acid sequence text. ASCII whitespace is ignored, letters are uppercased, and one trailing stop symbol is removed. The normalized sequence may contain at most 100,000 residues.",
-            "maxLength": 110000,
-            "minLength": 1,
+          "database_snapshots": {
+            "description": "Database snapshots used.",
+            "items": {
+              "$ref": "#/components/schemas/DatabaseSnapshot"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "generated_object_ids": {
+            "description": "Object ids created by the operation.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "input_hash": {
+            "description": "SHA-256 hash of canonical request input.",
+            "type": "string"
+          },
+          "operation": {
+            "description": "Primitive operation id.",
+            "type": "string"
+          },
+          "parameters_hash": {
+            "description": "SHA-256 hash of parameters.",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "Unique request identifier.",
+            "type": "string"
+          },
+          "server_version": {
+            "description": "Server version.",
+            "type": "string"
+          },
+          "tool_versions": {
+            "description": "Tool versions used.",
+            "items": {
+              "$ref": "#/components/schemas/ToolVersion"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "request_id",
+          "operation",
+          "created_at",
+          "server_version"
+        ],
+        "type": "object"
+      },
+      "ToolVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "version": {
             "type": "string"
           }
         },
         "required": [
-          "kind",
-          "sequence"
+          "name",
+          "version"
         ],
         "type": "object"
       },
@@ -1778,7 +2094,7 @@
   "paths": {
     "/v1/homology": {
       "post": {
-        "description": "Runs one typed protein query or an ordered batch of up to 16 queries against one resolved immutable database release and returns completed ranked results directly. This is a bounded stateless operation: no public job, polling, or result pagination is involved.",
+        "description": "Runs one protein-sequence search and returns the completed ranked results in the same response. Supply either a database id or slug to use its advertised current release, or supply one exact immutable database_release_id. The server resolves every scientific policy and reports every resolved identity, measurement, hash, warning, and usage value inline. No retained search resource, polling, or follow-up result request exists in the public API.",
         "operationId": "homology_search",
         "parameters": [
           {
@@ -1787,6 +2103,7 @@
             "name": "Idempotency-Key",
             "schema": {
               "description": "Optional retry identity. Reuse the same key for the same request after an ambiguous failure. When omitted, the server derives an identity from the resolved scientific request.",
+              "maxLength": 255,
               "type": "string"
             }
           }
@@ -1806,23 +2123,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologySearchResponse"
+                  "$ref": "#/components/schemas/EnvelopeHomologyResponse"
                 }
               }
             },
             "description": "OK",
             "headers": {
-              "Content-Type": {
-                "schema": {
-                  "type": "string"
-                }
-              },
-              "Rafflesia-API-Version": {
-                "schema": {
-                  "type": "string"
-                }
-              },
               "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
                 "schema": {
                   "type": "string"
                 }
@@ -1836,59 +2148,29 @@
           },
           "400": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                  "$ref": "#/components/schemas/ErrorModel"
                 }
               }
             },
             "description": "Bad Request"
           },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
           "402": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                  "$ref": "#/components/schemas/ErrorModel"
                 }
               }
             },
             "description": "Payment Required"
           },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
           "409": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                  "$ref": "#/components/schemas/ErrorModel"
                 }
               }
             },
@@ -1896,9 +2178,9 @@
           },
           "422": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                  "$ref": "#/components/schemas/ErrorModel"
                 }
               }
             },
@@ -1906,9 +2188,9 @@
           },
           "429": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                  "$ref": "#/components/schemas/ErrorModel"
                 }
               }
             },
@@ -1916,9 +2198,9 @@
           },
           "500": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                  "$ref": "#/components/schemas/ErrorModel"
                 }
               }
             },
@@ -1926,9 +2208,9 @@
           },
           "503": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                  "$ref": "#/components/schemas/ErrorModel"
                 }
               }
             },
@@ -1936,9 +2218,9 @@
           },
           "504": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                  "$ref": "#/components/schemas/ErrorModel"
                 }
               }
             },
@@ -1990,18 +2272,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyDatabaseList"
+                  "$ref": "#/components/schemas/EnvelopeHomologyDatabaseList"
                 }
               }
             },
             "description": "OK",
             "headers": {
-              "Rafflesia-API-Version": {
+              "Rafflesia-Contract-Digest": {
                 "schema": {
                   "type": "string"
                 }
               },
-              "Rafflesia-Contract-Digest": {
+              "Rafflesia-Version": {
                 "schema": {
                   "type": "string"
                 }
@@ -2013,85 +2295,15 @@
               }
             }
           },
-          "400": {
+          "default": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                  "$ref": "#/components/schemas/ErrorModel"
                 }
               }
             },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Too Many Requests"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Service Unavailable"
+            "description": "Error"
           }
         },
         "summary": "List searchable homology databases",
@@ -2147,18 +2359,18 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyDatabaseReleaseList"
+                  "$ref": "#/components/schemas/EnvelopeHomologyDatabaseReleaseList"
                 }
               }
             },
             "description": "OK",
             "headers": {
-              "Rafflesia-API-Version": {
+              "Rafflesia-Contract-Digest": {
                 "schema": {
                   "type": "string"
                 }
               },
-              "Rafflesia-Contract-Digest": {
+              "Rafflesia-Version": {
                 "schema": {
                   "type": "string"
                 }
@@ -2170,85 +2382,15 @@
               }
             }
           },
-          "400": {
+          "default": {
             "content": {
-              "application/json": {
+              "application/problem+json": {
                 "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                  "$ref": "#/components/schemas/ErrorModel"
                 }
               }
             },
-            "description": "Bad Request"
-          },
-          "401": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Unauthorized"
-          },
-          "403": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Forbidden"
-          },
-          "404": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Not Found"
-          },
-          "422": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Unprocessable Entity"
-          },
-          "429": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Too Many Requests"
-          },
-          "500": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Internal Server Error"
-          },
-          "503": {
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HomologyErrorResponse"
-                }
-              }
-            },
-            "description": "Service Unavailable"
+            "description": "Error"
           }
         },
         "summary": "List the immutable releases of a homology database",
