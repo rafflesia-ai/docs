@@ -91,6 +91,7 @@
                 "group": "Homology",
                 "pages": [
                   "POST /v1/homology",
+                  "POST /v1/homology/batch",
                   "GET /v1/homology/databases",
                   "GET /v1/homology/databases/{database_id}/releases"
                 ]

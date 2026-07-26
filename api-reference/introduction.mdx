@@ -12,6 +12,7 @@ https://api.rafflesia.ai
 | Method | Path |
 | --- | --- |
 | `POST` | `/v1/homology` |
+| `POST` | `/v1/homology/batch` |
 | `GET` | `/v1/homology/databases` |
 | `GET` | `/v1/homology/databases/{database_id}/releases` |
 
@@ -46,7 +47,8 @@ Successful responses include:
 | `Rafflesia-API-Version` | The public API version. |
 | `Rafflesia-Contract-Digest` | The served contract digest. |
 
-`POST /v1/homology` accepts an optional `Idempotency-Key` for safe retries. List
-operations accept `limit`, `starting_after`, and `ending_before`.
+Both `POST /v1/homology` and `POST /v1/homology/batch` accept an optional
+`Idempotency-Key` for safe retries. List operations accept `limit`,
+`starting_after`, and `ending_before`.
 
 See [Errors](/errors) for unsuccessful responses.

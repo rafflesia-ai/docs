@@ -3,18 +3,20 @@ title: Homology search
 description: The query, release, controls, and measurements in one completed search.
 ---
 
-`POST /v1/homology` is synchronous: one request returns the completed search.
-There is no public job or polling resource.
+Both search operations are synchronous: one request returns the completed
+search. There is no public job or polling resource.
 
 ## Query
 
-Send exactly one of:
+Use the endpoint that matches the query cardinality:
 
-- `query` — one typed protein sequence;
-- `queries` — 1–16 typed protein sequences that share the same controls.
+- `POST /v1/homology` accepts `query`, one typed protein sequence;
+- `POST /v1/homology/batch` accepts `queries`, 1–16 typed protein sequences
+  that share the same controls.
 
 Each query has `kind: "protein_sequence"` and a `sequence`. Batch responses stay
-in input order.
+in input order. The single endpoint rejects `queries`, and the batch endpoint
+rejects `query`.
 
 ## Database
 
