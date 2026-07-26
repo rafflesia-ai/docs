@@ -1,28 +1,56 @@
 ---
 title: Homology search
-description: One endpoint over immutable, object-storage-backed releases — POST /v1/homology/searches.
+description: The query, release, controls, and measurements in one completed search.
 ---
 
-Rafflesia's homology engine compiles a biological corpus once into an immutable
-release, then answers a protein-sequence query by range-reading only the bytes
-that query needs. Every result comes back as a named measurement with full
-provenance — never a bare score, and never a "homolog" verdict.
+`POST /v1/homology` is synchronous: one request returns the completed search.
+There is no public job or polling resource.
 
-One call starts the work: **`POST /v1/homology/searches`**. The computation is
-durable, so you then retrieve it and page its results by id.
+## Query
 
-<Columns cols={2}>
-  <Card title="Quickstart" icon="terminal" href="/homology-search/quickstart">
-    Run a computation, wait or poll, page the results.
-  </Card>
-  <Card title="Architecture" icon="layers" href="/homology-search/architecture">
-    Immutable releases, byte-range reads, and where the cost goes.
-  </Card>
-</Columns>
+Send exactly one of:
 
-## Next steps
+- `query` — one typed protein sequence;
+- `queries` — 1–16 typed protein sequences that share the same controls.
 
-- Run your first computation in the [Quickstart](/homology-search/quickstart).
-- See how immutable releases and byte-range reads work in [Architecture](/homology-search/architecture).
-- Read the request and response fields in the
-  [API reference](/api-reference/introduction).
+Each query has `kind: "protein_sequence"` and a `sequence`. Batch responses stay
+in input order.
+
+## Database
+
+Send exactly one of:
+
+- `database` — a database ID or slug; the server uses its advertised release;
+- `database_release_id` — an exact immutable release.
+
+Use the database and release list operations in the
+[API reference](/api-reference/introduction) to discover valid identifiers.
+
+## Controls
+
+| Field | Meaning |
+| --- | --- |
+| `filter` | Restrict eligible targets by release-backed metadata. |
+| `guarantee` | Require `approximate` or `exhaustive` search. |
+| `significance` | Omit, request when available, or require calibrated significance. |
+| `include` | Include pairwise alignment data; pass `[]` for candidate measurements only. |
+| `include_attributes` | Project supported target attributes such as `record_id`. |
+| `limit` | Return 1–10,000 ranked targets per query. |
+| `max_billable_units` | Fail before deterministic work exceeds this ceiling. |
+
+For batches, `queries × limit` may not exceed 1,000 when alignments are included
+or 10,000 without them.
+
+## Results
+
+A single search returns `results`. A batch returns one entry in `responses` for
+each input query.
+
+Every result includes `rank`, a stable `target.id`, and
+`maxsim.query_to_target`, `maxsim.target_to_query`, and
+`maxsim.bidirectional`. Affine measurements, pairwise alignment, and
+significance appear when requested and supported. The response also records
+`database`, `method`, `usage`, `performance`, `result_sha256`, and `warnings`.
+
+The generated [endpoint reference](/api-reference/introduction) is the source of
+truth for schemas and allowed values.

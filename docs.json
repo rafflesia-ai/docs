@@ -2,7 +2,7 @@
   "$schema": "https://mintlify.com/docs.json",
   "theme": "maple",
   "name": "Rafflesia",
-  "description": "Deterministic biological evidence primitives over sequences, structures, and tabular evidence.",
+  "description": "Protein homology search over immutable database releases.",
   "colors": {
     "primary": "#000000",
     "light": "#FFFFFF",
@@ -42,66 +42,31 @@
     "light": "/favicon/light.svg",
     "dark": "/favicon/dark.svg"
   },
-  "search": {
-    "prompt": "Search the primitives"
-  },
   "navigation": {
     "tabs": [
       {
         "tab": "Documentation",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Start",
             "pages": [
               "index",
-              "quickstart",
-              "concepts/primitives",
-              "concepts/determinism"
+              "quickstart"
             ]
           },
           {
-            "group": "CLI",
-            "pages": [
-              "cli/overview",
-              "cli/authentication",
-              "cli/command-surface"
-            ]
-          },
-          {
-            "group": "Homology search",
+            "group": "Guides",
             "pages": [
               "homology-search/index",
-              "homology-search/quickstart",
-              "homology-search/architecture"
+              "ontology/index"
             ]
           },
           {
-            "group": "Ontology",
+            "group": "Clients",
             "pages": [
-              "ontology/index",
-              "ontology/identity",
-              "ontology/equivalences",
-              "ontology/relations",
-              "ontology/joins",
-              "ontology/rql"
+              "cli/overview",
+              "sdks/index"
             ]
-          },
-          {
-            "group": "AI Foundry",
-            "pages": ["ai-foundry/index"]
-          },
-          {
-            "group": "Evals",
-            "pages": ["evals/index"]
-          }
-        ]
-      },
-      {
-        "tab": "SDKs",
-        "groups": [
-          {
-            "group": "SDKs",
-            "pages": ["sdks/index"]
           }
         ]
       },
@@ -110,14 +75,27 @@
         "groups": [
           {
             "group": "Reference",
-            "pages": ["api-reference/introduction", "errors"]
+            "pages": [
+              "api-reference/introduction",
+              "errors"
+            ]
           },
           {
             "group": "Endpoints",
             "openapi": {
               "source": "/api-reference/openapi.json",
               "directory": "api-reference/endpoints"
-            }
+            },
+            "pages": [
+              {
+                "group": "Homology",
+                "pages": [
+                  "POST /v1/homology",
+                  "GET /v1/homology/databases",
+                  "GET /v1/homology/databases/{database_id}/releases"
+                ]
+              }
+            ]
           }
         ]
       }
@@ -130,7 +108,7 @@
           "icon": "layout-dashboard"
         },
         {
-          "anchor": "SDKs on GitHub",
+          "anchor": "GitHub",
           "href": "https://github.com/rafflesia-ai",
           "icon": "github"
         }
@@ -138,12 +116,6 @@
     }
   },
   "navbar": {
-    "links": [
-      {
-        "label": "rafflesia.ai",
-        "href": "https://rafflesia.ai"
-      }
-    ],
     "primary": {
       "type": "button",
       "label": "Get an API key",
@@ -154,40 +126,9 @@
     "socials": {
       "website": "https://rafflesia.ai",
       "github": "https://github.com/rafflesia-ai"
-    },
-    "links": [
-      {
-        "header": "Product",
-        "items": [
-          { "label": "Homology search", "href": "/homology-search" },
-          { "label": "Ontology", "href": "/ontology" },
-          { "label": "AI Foundry", "href": "/ai-foundry" },
-          { "label": "Evals", "href": "/evals" }
-        ]
-      },
-      {
-        "header": "Developers",
-        "items": [
-          { "label": "Quickstart", "href": "/quickstart" },
-          { "label": "CLI", "href": "/cli/overview" },
-          { "label": "SDKs", "href": "/sdks" },
-          { "label": "API reference", "href": "/api-reference/introduction" }
-        ]
-      },
-      {
-        "header": "Company",
-        "items": [
-          { "label": "rafflesia.ai", "href": "https://rafflesia.ai" },
-          { "label": "Contact", "href": "mailto:contact@rafflesia.ai" }
-        ]
-      }
-    ]
+    }
   },
   "redirects": [
-    {
-      "source": "/errors/:code*",
-      "destination": "/errors"
-    },
     {
       "source": "/api-reference",
       "destination": "/api-reference/introduction"
@@ -204,6 +145,8 @@
     "indexing": "navigable"
   },
   "contextual": {
-    "options": ["copy", "view", "chatgpt", "claude", "mcp"]
+    "options": [
+      "copy"
+    ]
   }
 }

@@ -1,98 +1,52 @@
 ---
 title: API reference
-description: Base URL, authentication, response headers, idempotency, and pagination for the Rafflesia REST API.
+description: The complete public Rafflesia API.
 ---
 
-The Rafflesia API is JSON over HTTPS. Every endpoint returns the same
-[envelope](/concepts/primitives), and every endpoint documented here is generated
-from the curated OpenAPI contract — the same contract the [SDKs](/sdks) are
-generated from.
+```text
+https://api.rafflesia.ai
+```
 
-<Card title="Base URL" icon="globe">
-  `https://api.rafflesia.ai`
-</Card>
+## Public surface
 
-## The published surface
+| Method | Path |
+| --- | --- |
+| `POST` | `/v1/homology` |
+| `GET` | `/v1/homology/databases` |
+| `GET` | `/v1/homology/databases/{database_id}/releases` |
 
-The REST surface is deliberately small and grows one route at a time. A route is
-public only when it is declared in the API's public-route manifest; everything
-else the engine serves is internal and is not part of this reference, the SDKs,
-or the generated CLI.
-
-Today that surface is **homology search**. The endpoint pages in this section are
-the complete published API — if a capability is documented in a guide but has no
-endpoint page here, it is not yet exposed as a public route.
-
-<Note>
-  The `rafflesia` CLI covers a much wider set of primitives than the published
-  REST surface. Those commands are the supported way to reach them; the REST
-  contract is what carries a stability promise.
-</Note>
+These endpoint pages and the public SDKs are generated from the same curated
+OpenAPI document.
 
 ## Authentication
 
-Send an API key as a bearer token. Create keys in the
-[dashboard](https://dashboard.rafflesia.ai).
+Send an API key as a bearer token:
 
 ```bash
-curl https://api.rafflesia.ai/v1/refs/resolve \
-  -H "Authorization: Bearer $RAFFLESIA_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{"query": "BRCA1", "limit": 5}'
+curl https://api.rafflesia.ai/v1/homology/databases \
+  -H "Authorization: Bearer $RAFFLESIA_API_KEY"
 ```
 
-Requests are scoped to the organization that owns the key. A well-formed key on a
-resource outside its scope is refused as an authorization failure, not a bad
-credential.
+Create keys in the [dashboard](https://dashboard.rafflesia.ai).
 
-## Shape of a request
+## Responses
 
-Most primitives are `POST` with a JSON body, including read-only ones. That is
-deliberate: the inputs are structured (multiple identifiers, budgets, release
-pins, source declarations), and a canonical JSON body is what makes
-`provenance.input_hash` reproducible.
+Search responses are plain JSON objects. A single query returns `results`; a
+batch returns `responses` in input order. Both include `request_id`, `usage`,
+`performance`, `result_sha256`, and `warnings`.
 
-## Response headers
+The two list operations return `data`, `has_more`, and an opaque `next_cursor`
+when another page exists.
+
+Successful responses include:
 
 | Header | Meaning |
 | --- | --- |
-| `X-Request-ID` | Unique id for this request. Echoed in `provenance.request_id`. Quote it in any report. |
-| `Rafflesia-Version` | Server version that produced the response. |
-| `Rafflesia-Contract-Digest` | Digest of the served API contract. A change means the surface moved. |
+| `X-Request-ID` | The request identifier. |
+| `Rafflesia-API-Version` | The public API version. |
+| `Rafflesia-Contract-Digest` | The served contract digest. |
 
-## Idempotency
+`POST /v1/homology` accepts an optional `Idempotency-Key` for safe retries. List
+operations accept `limit`, `starting_after`, and `ending_before`.
 
-Every `POST` accepts an `Idempotency-Key`. Retrying with the same key returns the
-original result instead of creating a second job or object — which matters
-because a timeout tells you nothing about whether the work happened.
-
-```bash
--H "Idempotency-Key: $(uuidgen)"
-```
-
-## Errors
-
-Failures use the envelope with `ok: false` and a typed `error` whose `code` is
-stable. The categories and their HTTP statuses are in [Errors](/errors).
-
-Error bodies for transport-level problems follow
-`application/problem+json`; primitive-level failures come back in the standard
-envelope.
-
-## Pagination
-
-List endpoints return an opaque `next_cursor`. Pass it back as `cursor` to
-continue. Do not construct or parse cursors — they encode server-side position
-and are not stable input.
-
-## Durable jobs
-
-Long operations — structure prediction, background searches, exports — are
-submitted as jobs. The submit call returns a job id; poll the job endpoint until
-it reaches a terminal state, then read the content-addressed objects it
-produced.
-
-## Rate limits
-
-Rate-limited requests return `429` with `type: rate_limit_error`. Back off and
-retry; the same request will succeed later.
+See [Errors](/errors) for unsuccessful responses.

@@ -1,75 +1,21 @@
 ---
 title: Rafflesia
-description: Deterministic biological evidence primitives over sequences, structures, and tabular evidence. The engine is an instrument; the caller does the reasoning.
+description: Reproducible protein homology search.
 ---
 
-Rafflesia answers biological evidence questions with small, typed, reproducible
-primitives. Ask for a sequence record, a pocket, a confidence summary, a
-homology search, or a release-pinned SQL result, and you get back measurements
-with provenance — never an interpretation, a bundled report, or hidden
-reasoning.
+Rafflesia searches protein sequences against immutable database releases. It
+reports measurements, warnings, and the exact database and method used. You
+decide what they mean.
 
-Every response carries the exact releases, digests, and engine versions that
-produced it, so the same call made twice returns the same answer, and any answer
-can be traced to the bytes it came from.
+[Run your first search](/quickstart) or open the
+[API reference](/api-reference/introduction).
 
-<Columns cols={2}>
-  <Card title="Quickstart" icon="terminal" href="/quickstart">
-    Install the CLI, authenticate, and pull your first piece of evidence in
-    under five minutes.
-  </Card>
-  <Card title="What a primitive is" icon="box" href="/concepts/primitives">
-    The response envelope, warnings, evidence summaries, and provenance that
-    every primitive shares.
-  </Card>
-</Columns>
+## Learn
 
-## Capabilities
+- [Homology search](/homology-search) — queries, releases, controls, and results.
+- [Requel](/ontology) — governed, reproducible data workflows for agents.
 
-<Columns cols={2}>
-  <Card title="Homology search" icon="search" href="/homology-search">
-    Compile a corpus once into an immutable release, then answer
-    protein-sequence searches by reading only the bytes each query needs.
-  </Card>
-  <Card title="Ontology" icon="network" href="/ontology">
-    The typed semantic layer that makes every cross-source biology query
-    checked, portable, and reproducible.
-  </Card>
-  <Card title="AI Foundry" icon="cpu" href="/ai-foundry">
-    One typed API for open biological models — structure prediction, protein
-    design, embeddings, and variant effects.
-  </Card>
-  <Card title="Evals" icon="target" href="/evals">
-    Deterministic environments that grade research agents and the engine against
-    hidden references and curated ground truth.
-  </Card>
-</Columns>
+## Build
 
-## Three ways in
-
-<Columns cols={3}>
-  <Card title="CLI" icon="square-terminal" href="/cli/overview">
-    `rafflesia` is the primary surface. Every command prints a JSON envelope.
-  </Card>
-  <Card title="SDKs" icon="package" href="/sdks">
-    Node, Python, Go, Rust, Java, .NET, Ruby, and PHP — all generated from the
-    same OpenAPI contract.
-  </Card>
-  <Card title="REST API" icon="webhook" href="/api-reference/introduction">
-    `https://api.rafflesia.ai` — bearer-authenticated JSON over HTTPS.
-  </Card>
-</Columns>
-
-## What Rafflesia will not do
-
-The product boundary is deliberate and worth knowing before you build on it:
-
-- **No interpretation.** A primitive returns measurements, not conclusions about
-  whether two proteins are homologous or whether a variant is pathogenic.
-- **No bundles or reports.** Composition is the caller's job, which keeps every
-  step auditable.
-- **No hidden reasoning.** There is no model in the request path deciding what
-  you meant.
-- **No silent fallbacks.** A missing input, an unmapped identifier, or an
-  unauthorized join fails loudly instead of returning a plausible-looking
-  answer.
+- [CLI](/cli/overview) — search from a terminal.
+- [SDKs](/sdks) — generated clients for eight languages.

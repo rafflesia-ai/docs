@@ -1,45 +1,34 @@
 ---
-title: CLI overview
-description: Install and use the canonical rafflesia CLI for the curated public API.
+title: CLI
+description: Search the public Rafflesia API from a terminal.
 ---
 
-`rafflesia` is the command-line client for the public Rafflesia API. It is a
-thin host over the generated Go SDK, so its request and response types come from
-the same curated OpenAPI contract as the other public SDKs.
+Install the `rafflesia` binary:
 
 ```bash
 curl -fsSL https://rafflesia.ai/install.sh | sh
-rafflesia --help
 ```
 
-## Global flags
+Set an API key and search:
 
-| Flag | Purpose |
-| --- | --- |
-| `--server <url>` | Override the API base URL. |
-| `--api-key <key>` | Override the stored key and `RAFFLESIA_API_KEY`. |
-| `--access-token <token>` | Override the stored OAuth token and `RAFFLESIA_ACCESS_TOKEN`. |
-| `--json` | Print the raw response envelope. |
+```bash
+export RAFFLESIA_API_KEY=sk_production_…
 
-Credential precedence is command flag, environment variable, then the value
-stored by `rafflesia auth login`. Access tokens take precedence over API keys
-at the environment layer. Supplying both credential flags is an error. Without
-a server override, the CLI uses `https://api.rafflesia.ai`.
+rafflesia homology search \
+  --sequence MTEYKLVVVGAGGVGKSALTIQLIQNHFVDEYDPTIEDSYRKQV \
+  --database tomato \
+  --limit 10
+```
 
-## Environment variables
+## Commands
 
-| Variable | Effect |
-| --- | --- |
-| `RAFFLESIA_API_BASE_URL` | API base URL when `--server` is absent. |
-| `RAFFLESIA_API_KEY` | API key when `--api-key` is absent. |
-| `RAFFLESIA_ACCESS_TOKEN` | Bearer access token when `--access-token` is absent. |
-| `RAFFLESIA_CONFIG_PATH` | Exact credential-file path for isolated automation. |
+```text
+rafflesia homology databases list
+rafflesia homology releases list <database_id>
+rafflesia homology search
+```
 
-## Output and exit status
+`--database` accepts a database ID or slug and uses its advertised release.
+`--release-id` pins the API's `database_release_id` instead.
 
-Homology creation and retrieval print a compact id/status line by default.
-Homology results and every command invoked with `--json` print the generated
-SDK response envelope as JSON.
-
-The CLI exits `0` on success and `1` for flag validation, transport, or API
-errors.
+Use `--json` for the complete JSON response and `--help` for all flags.
