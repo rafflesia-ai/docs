@@ -42,6 +42,11 @@
     "light": "/favicon/light.png",
     "dark": "/favicon/dark.png"
   },
+  "api": {
+    "examples": {
+      "autogenerate": false
+    }
+  },
   "navigation": {
     "tabs": [
       {
