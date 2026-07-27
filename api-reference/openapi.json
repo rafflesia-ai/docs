@@ -1,6 +1,28 @@
 {
   "components": {
     "schemas": {
+      "DatabaseSnapshot": {
+        "additionalProperties": false,
+        "properties": {
+          "digest": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "version"
+        ],
+        "type": "object"
+      },
       "HomologyAffineMeasurements": {
         "additionalProperties": false,
         "properties": {
@@ -31,6 +53,13 @@
           "method": {
             "$ref": "#/components/schemas/HomologyResponseMethod"
           },
+          "object": {
+            "description": "Always homology_search_result_set.",
+            "enum": [
+              "homology_search_result_set"
+            ],
+            "type": "string"
+          },
           "query": {
             "$ref": "#/components/schemas/HomologyResponseQuery"
           },
@@ -38,6 +67,9 @@
             "format": "int64",
             "minimum": 0,
             "type": "integer"
+          },
+          "receipt": {
+            "$ref": "#/components/schemas/HomologyResponseReceipt"
           },
           "result_sha256": {
             "type": "string"
@@ -62,10 +94,12 @@
           }
         },
         "required": [
+          "object",
           "query_index",
           "query",
           "database",
           "method",
+          "receipt",
           "results",
           "is_result_limit_reached",
           "result_sha256",
@@ -78,53 +112,24 @@
         "additionalProperties": false,
         "allOf": [
           {
-            "oneOf": [
-              {
-                "not": {
-                  "required": [
-                    "database_release_id"
-                  ],
-                  "type": "object"
-                },
-                "properties": {
-                  "database": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "database"
-                ],
-                "type": "object"
-              },
-              {
-                "not": {
-                  "required": [
-                    "database"
-                  ],
-                  "type": "object"
-                },
-                "properties": {
-                  "database_release_id": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "database_release_id"
-                ],
-                "type": "object"
-              }
-            ]
+            "not": {
+              "required": [
+                "database",
+                "database_release_id"
+              ],
+              "type": "object"
+            }
           }
         ],
         "properties": {
           "database": {
-            "description": "Database id or slug from homology.databases.list. Exactly one of database or database_release_id is required.",
+            "description": "Database id or slug from homology.databases.list. Omit both database selectors to use the server-advertised default database and its default release. Mutually exclusive with database_release_id.",
             "maxLength": 256,
             "minLength": 1,
             "type": "string"
           },
           "database_release_id": {
-            "description": "Exact immutable release id. Exactly one of database or database_release_id is required.",
+            "description": "Exact immutable release id. Omit both database selectors to use the server-advertised default database and its default release. Mutually exclusive with database.",
             "maxLength": 256,
             "minLength": 1,
             "type": "string"
@@ -180,12 +185,6 @@
             "minimum": 1,
             "type": "integer"
           },
-          "max_billable_units": {
-            "description": "Optional hard ceiling on deterministic billable work across the complete batch. The batch fails before exceeding it.",
-            "format": "int64",
-            "minimum": 1,
-            "type": "integer"
-          },
           "queries": {
             "description": "An ordered batch of 1 to 16 typed biological queries sharing every search control.",
             "items": {
@@ -196,9 +195,10 @@
             "type": "array"
           },
           "significance": {
-            "default": "if_available",
-            "description": "Whether database-aware significance is omitted, included when a compatible calibration exists, or required for the request to succeed.",
+            "default": "auto",
+            "description": "Database-aware significance policy. Auto requests significance when alignment evidence is returned and skips it for candidate measurements only.",
             "enum": [
+              "auto",
               "not_requested",
               "if_available",
               "required"
@@ -214,6 +214,13 @@
       "HomologyBatchResponse": {
         "additionalProperties": false,
         "properties": {
+          "object": {
+            "description": "Always homology_search_result_set_batch.",
+            "enum": [
+              "homology_search_result_set_batch"
+            ],
+            "type": "string"
+          },
           "performance": {
             "$ref": "#/components/schemas/HomologyResponsePerformance"
           },
@@ -245,6 +252,7 @@
           }
         },
         "required": [
+          "object",
           "request_id",
           "responses",
           "result_sha256",
@@ -286,6 +294,10 @@
             "description": "Opaque database id used to enumerate immutable releases.",
             "type": "string"
           },
+          "is_default": {
+            "description": "Whether omitting both database selectors currently resolves to this database and its advertised default release.",
+            "type": "boolean"
+          },
           "molecule_type": {
             "type": "string"
           },
@@ -317,6 +329,7 @@
           "slug",
           "display_name",
           "molecule_type",
+          "is_default",
           "query_kinds",
           "evidence"
         ],
@@ -335,33 +348,37 @@
             "type": "string"
           },
           "data": {
+            "description": "The databases in this page. Always an array, including for an empty page.",
             "items": {
               "$ref": "#/components/schemas/HomologyDatabase"
             },
-            "type": [
-              "array",
-              "null"
-            ]
+            "type": "array"
           },
-          "has_more": {
-            "type": "boolean"
-          },
-          "next_cursor": {
-            "type": "string"
+          "list_metadata": {
+            "$ref": "#/components/schemas/PaginationCursor"
           },
           "object": {
             "description": "Always list.",
             "type": "string"
           },
-          "url": {
-            "type": "string"
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance for this page."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings observed while producing this page. Always an array.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": "array"
           }
         },
         "required": [
           "object",
-          "url",
           "data",
-          "has_more"
+          "list_metadata",
+          "warnings",
+          "provenance"
         ],
         "type": "object"
       },
@@ -380,12 +397,12 @@
           "compiler_version": {
             "type": "string"
           },
-          "corpus_snapshot_id": {
-            "description": "Immutable Tomato corpus snapshot selected by this release.",
+          "corpus_published_at": {
+            "description": "UTC publication or update date of the upstream corpus. This is not the time the Tomato release was built.",
             "type": "string"
           },
-          "created_at": {
-            "description": "UTC creation time when the release authority supplies one.",
+          "corpus_snapshot_id": {
+            "description": "Immutable Tomato corpus snapshot selected by this release.",
             "type": "string"
           },
           "database_id": {
@@ -449,33 +466,37 @@
             "type": "string"
           },
           "data": {
+            "description": "The releases in this page. Always an array, including for an empty page.",
             "items": {
               "$ref": "#/components/schemas/HomologyDatabaseRelease"
             },
-            "type": [
-              "array",
-              "null"
-            ]
+            "type": "array"
           },
-          "has_more": {
-            "type": "boolean"
-          },
-          "next_cursor": {
-            "type": "string"
+          "list_metadata": {
+            "$ref": "#/components/schemas/PaginationCursor"
           },
           "object": {
             "description": "Always list.",
             "type": "string"
           },
-          "url": {
-            "type": "string"
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance for this page."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings observed while producing this page. Always an array.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": "array"
           }
         },
         "required": [
           "object",
-          "url",
           "data",
-          "has_more"
+          "list_metadata",
+          "warnings",
+          "provenance"
         ],
         "type": "object"
       },
@@ -483,6 +504,21 @@
         "additionalProperties": false,
         "description": "Recursive metadata predicate defining the eligible target population. Field/operator compatibility and limits come from the immutable filter schema for the selected release. Missing fields use strong Kleene logic; only true records are eligible.",
         "discriminator": {
+          "mapping": {
+            "and": "#/components/schemas/HomologyFilterAnd",
+            "contains": "#/components/schemas/HomologyFilterContains",
+            "contains_all": "#/components/schemas/HomologyFilterContainsAll",
+            "contains_any": "#/components/schemas/HomologyFilterContainsAny",
+            "eq": "#/components/schemas/HomologyFilterEq",
+            "exists": "#/components/schemas/HomologyFilterExists",
+            "gt": "#/components/schemas/HomologyFilterGt",
+            "gte": "#/components/schemas/HomologyFilterGte",
+            "in": "#/components/schemas/HomologyFilterIn",
+            "lt": "#/components/schemas/HomologyFilterLt",
+            "lte": "#/components/schemas/HomologyFilterLte",
+            "not": "#/components/schemas/HomologyFilterNot",
+            "or": "#/components/schemas/HomologyFilterOr"
+          },
           "propertyName": "op"
         },
         "oneOf": [
@@ -1092,6 +1128,15 @@
       "HomologyFilterSchema": {
         "additionalProperties": false,
         "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/HomologyFilterSchema.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
           "database_release_id": {
             "type": "string"
           },
@@ -1145,6 +1190,34 @@
           "fields",
           "missing_field_semantics",
           "limits"
+        ],
+        "type": "object"
+      },
+      "HomologyLateInteractionMeasurements": {
+        "additionalProperties": false,
+        "properties": {
+          "distance": {
+            "format": "double",
+            "type": "number"
+          },
+          "mean_closest_cosine_distance": {
+            "format": "double",
+            "type": "number"
+          },
+          "mean_closest_cosine_similarity": {
+            "format": "double",
+            "type": "number"
+          },
+          "query_token_count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "distance",
+          "query_token_count",
+          "mean_closest_cosine_distance",
+          "mean_closest_cosine_similarity"
         ],
         "type": "object"
       },
@@ -1314,53 +1387,24 @@
         "additionalProperties": false,
         "allOf": [
           {
-            "oneOf": [
-              {
-                "not": {
-                  "required": [
-                    "database_release_id"
-                  ],
-                  "type": "object"
-                },
-                "properties": {
-                  "database": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "database"
-                ],
-                "type": "object"
-              },
-              {
-                "not": {
-                  "required": [
-                    "database"
-                  ],
-                  "type": "object"
-                },
-                "properties": {
-                  "database_release_id": {
-                    "type": "string"
-                  }
-                },
-                "required": [
-                  "database_release_id"
-                ],
-                "type": "object"
-              }
-            ]
+            "not": {
+              "required": [
+                "database",
+                "database_release_id"
+              ],
+              "type": "object"
+            }
           }
         ],
         "properties": {
           "database": {
-            "description": "Database id or slug from homology.databases.list. Exactly one of database or database_release_id is required.",
+            "description": "Database id or slug from homology.databases.list. Omit both database selectors to use the server-advertised default database and its default release. Mutually exclusive with database_release_id.",
             "maxLength": 256,
             "minLength": 1,
             "type": "string"
           },
           "database_release_id": {
-            "description": "Exact immutable release id. Exactly one of database or database_release_id is required.",
+            "description": "Exact immutable release id. Omit both database selectors to use the server-advertised default database and its default release. Mutually exclusive with database.",
             "maxLength": 256,
             "minLength": 1,
             "type": "string"
@@ -1416,20 +1460,15 @@
             "minimum": 1,
             "type": "integer"
           },
-          "max_billable_units": {
-            "description": "Optional hard ceiling on deterministic billable work. The search fails before exceeding it.",
-            "format": "int64",
-            "minimum": 1,
-            "type": "integer"
-          },
           "query": {
             "$ref": "#/components/schemas/HomologyQuery",
             "description": "One typed biological query."
           },
           "significance": {
-            "default": "if_available",
-            "description": "Whether database-aware significance is omitted, included when a compatible calibration exists, or required for the request to succeed.",
+            "default": "auto",
+            "description": "Database-aware significance policy. Auto requests significance when alignment evidence is returned and skips it for candidate measurements only.",
             "enum": [
+              "auto",
               "not_requested",
               "if_available",
               "required"
@@ -1455,11 +1494,21 @@
           "method": {
             "$ref": "#/components/schemas/HomologyResponseMethod"
           },
+          "object": {
+            "description": "Always homology_search_result_set.",
+            "enum": [
+              "homology_search_result_set"
+            ],
+            "type": "string"
+          },
           "performance": {
             "$ref": "#/components/schemas/HomologyResponsePerformance"
           },
           "query": {
             "$ref": "#/components/schemas/HomologyResponseQuery"
+          },
+          "receipt": {
+            "$ref": "#/components/schemas/HomologyResponseReceipt"
           },
           "request_id": {
             "type": "string"
@@ -1487,10 +1536,12 @@
           }
         },
         "required": [
+          "object",
           "request_id",
           "query",
           "database",
           "method",
+          "receipt",
           "results",
           "is_result_limit_reached",
           "result_sha256",
@@ -1564,6 +1615,9 @@
             ],
             "type": "string"
           },
+          "policy_resolution": {
+            "$ref": "#/components/schemas/HomologySearchPolicyResolution"
+          },
           "search_policy_id": {
             "type": "string"
           },
@@ -1574,6 +1628,7 @@
         "required": [
           "engine",
           "search_policy_id",
+          "policy_resolution",
           "semantic_profile_id",
           "is_exhaustive",
           "is_deterministic"
@@ -1639,6 +1694,49 @@
         ],
         "type": "object"
       },
+      "HomologyResponseReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "bytes": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "execution_receipt_bytes": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "execution_receipt_id": {
+            "description": "Identity of the lower-level Tomato executor or distributed-job receipt.",
+            "minLength": 1,
+            "type": "string"
+          },
+          "execution_receipt_sha256": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "id": {
+            "description": "Opaque content-addressed identity of the complete canonical search outcome.",
+            "pattern": "^out_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "sha256": {
+            "description": "Digest of the exact retained canonical outcome-receipt bytes.",
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sha256",
+          "bytes",
+          "execution_receipt_id",
+          "execution_receipt_sha256",
+          "execution_receipt_bytes"
+        ],
+        "type": "object"
+      },
       "HomologyResponseUsage": {
         "additionalProperties": false,
         "properties": {
@@ -1672,6 +1770,9 @@
           "alignment": {
             "$ref": "#/components/schemas/HomologyPairwiseAlignment"
           },
+          "late_interaction": {
+            "$ref": "#/components/schemas/HomologyLateInteractionMeasurements"
+          },
           "maxsim": {
             "$ref": "#/components/schemas/HomologyMaxSimMeasurements"
           },
@@ -1688,8 +1789,7 @@
         },
         "required": [
           "rank",
-          "target",
-          "maxsim"
+          "target"
         ],
         "type": "object"
       },
@@ -1706,10 +1806,16 @@
           "id": {
             "description": "Stable target record id within the selected immutable database release.",
             "type": "string"
+          },
+          "sequence": {
+            "description": "Canonical amino-acid sequence from the selected immutable database release.",
+            "minLength": 1,
+            "type": "string"
           }
         },
         "required": [
-          "id"
+          "id",
+          "sequence"
         ],
         "type": "object"
       },
@@ -1768,6 +1874,73 @@
         ],
         "type": "object"
       },
+      "HomologySearchPolicyResolution": {
+        "additionalProperties": false,
+        "properties": {
+          "authority": {
+            "enum": [
+              "exhaustive_reference",
+              "qualified_evaluation",
+              "exhaustive_fallback",
+              "empty_target_space",
+              "unqualified_prototype"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^hpolres_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "is_fallback": {
+            "type": "boolean"
+          },
+          "quality_evaluation_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array"
+          },
+          "reason": {
+            "enum": [
+              "release_default_is_exhaustive",
+              "published_default_is_qualified",
+              "explicit_exhaustive_reference",
+              "explicit_policy_is_qualified",
+              "no_qualified_evaluation",
+              "no_exact_target_space_evaluation",
+              "target_space_is_empty",
+              "unqualified_prototype"
+            ],
+            "type": "string"
+          },
+          "release_default_policy_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "requested_policy_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "resolved_policy_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "target_space_id": {
+            "pattern": "^htsp_[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "release_default_policy_id",
+          "resolved_policy_id",
+          "authority",
+          "quality_evaluation_ids",
+          "is_fallback",
+          "reason"
+        ],
+        "type": "object"
+      },
       "HomologySearchResponse": {
         "$ref": "#/components/schemas/HomologyResponse"
       },
@@ -1822,6 +1995,20 @@
         ],
         "type": "object"
       },
+      "PaginationCursor": {
+        "additionalProperties": false,
+        "properties": {
+          "after": {
+            "description": "Cursor id for the next page; empty when this is the last page.",
+            "type": "string"
+          },
+          "before": {
+            "description": "Cursor id for the previous page; empty when this is the first page.",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
       "ProteinSequenceQuery": {
         "additionalProperties": false,
         "properties": {
@@ -1841,6 +2028,95 @@
         "required": [
           "kind",
           "sequence"
+        ],
+        "type": "object"
+      },
+      "Provenance": {
+        "additionalProperties": false,
+        "properties": {
+          "cache_hit": {
+            "description": "Whether cached output was reused.",
+            "type": "boolean"
+          },
+          "created_at": {
+            "description": "UTC timestamp.",
+            "type": "string"
+          },
+          "database_snapshots": {
+            "description": "Database snapshots used.",
+            "items": {
+              "$ref": "#/components/schemas/DatabaseSnapshot"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "generated_object_ids": {
+            "description": "Object ids created by the operation.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "input_hash": {
+            "description": "SHA-256 hash of canonical request input.",
+            "type": "string"
+          },
+          "operation": {
+            "description": "Primitive operation id.",
+            "type": "string"
+          },
+          "parameters_hash": {
+            "description": "SHA-256 hash of parameters.",
+            "type": "string"
+          },
+          "request_id": {
+            "description": "Unique request identifier.",
+            "type": "string"
+          },
+          "server_version": {
+            "description": "Server version.",
+            "type": "string"
+          },
+          "tool_versions": {
+            "description": "Tool versions used.",
+            "items": {
+              "$ref": "#/components/schemas/ToolVersion"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "request_id",
+          "operation",
+          "created_at",
+          "server_version"
+        ],
+        "type": "object"
+      },
+      "ToolVersion": {
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "version": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "version"
         ],
         "type": "object"
       },
@@ -1889,11 +2165,11 @@
         "operationId": "homology_search",
         "parameters": [
           {
-            "description": "Optional retry identity. Reuse the same key for the same request after an ambiguous failure. When omitted, the server derives an identity from the resolved scientific request.",
+            "description": "Optional retry identity. Reuse the same key for the same request after an ambiguous failure. When omitted, each HTTP request is a distinct billable operation, while equivalent scientific execution may still be reused from cache.",
             "in": "header",
             "name": "Idempotency-Key",
             "schema": {
-              "description": "Optional retry identity. Reuse the same key for the same request after an ambiguous failure. When omitted, the server derives an identity from the resolved scientific request.",
+              "description": "Optional retry identity. Reuse the same key for the same request after an ambiguous failure. When omitted, each HTTP request is a distinct billable operation, while equivalent scientific execution may still be reused from cache.",
               "type": "string"
             }
           }
@@ -2055,6 +2331,12 @@
         "summary": "Search for homologous protein sequences",
         "tags": [
           "Homology"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request POST \\\n  --url \"https://api.rafflesia.ai/v1/homology\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n    \"query\": {\n      \"kind\": \"protein_sequence\",\n      \"sequence\": \"\u003csequence\u003e\"\n    }\n  }'\n"
+          }
         ]
       }
     },
@@ -2064,11 +2346,11 @@
         "operationId": "homology_many",
         "parameters": [
           {
-            "description": "Optional retry identity for the complete all-or-nothing batch. Reuse the same key only with the same request.",
+            "description": "Optional retry identity for the complete all-or-nothing batch. Reuse the same key only with the same request. When omitted, each item in each HTTP request is a distinct billable operation.",
             "in": "header",
             "name": "Idempotency-Key",
             "schema": {
-              "description": "Optional retry identity for the complete all-or-nothing batch. Reuse the same key only with the same request.",
+              "description": "Optional retry identity for the complete all-or-nothing batch. Reuse the same key only with the same request. When omitted, each item in each HTTP request is a distinct billable operation.",
               "type": "string"
             }
           }
@@ -2230,6 +2512,12 @@
         "summary": "Search for homologous protein sequences in a batch",
         "tags": [
           "Homology"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request POST \\\n  --url \"https://api.rafflesia.ai/v1/homology/batch\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n    \"queries\": [\n      {\n        \"kind\": \"protein_sequence\",\n        \"sequence\": \"\u003csequence\u003e\"\n      }\n    ]\n  }'\n"
+          }
         ]
       }
     },
@@ -2251,18 +2539,22 @@
             }
           },
           {
+            "description": "Return the page immediately before this opaque cursor. Mutually exclusive with after.",
             "explode": false,
             "in": "query",
-            "name": "starting_after",
+            "name": "before",
             "schema": {
+              "description": "Return the page immediately before this opaque cursor. Mutually exclusive with after.",
               "type": "string"
             }
           },
           {
+            "description": "Return the page immediately after this opaque cursor. Mutually exclusive with before.",
             "explode": false,
             "in": "query",
-            "name": "ending_before",
+            "name": "after",
             "schema": {
+              "description": "Return the page immediately after this opaque cursor. Mutually exclusive with before.",
               "type": "string"
             }
           }
@@ -2379,6 +2671,12 @@
         "summary": "List searchable homology databases",
         "tags": [
           "Homology"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request GET \\\n  --url \"https://api.rafflesia.ai/v1/homology/databases?limit=20\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\"\n"
+          }
         ]
       }
     },
@@ -2408,18 +2706,22 @@
             }
           },
           {
+            "description": "Return the page immediately before this opaque cursor. Mutually exclusive with after.",
             "explode": false,
             "in": "query",
-            "name": "starting_after",
+            "name": "before",
             "schema": {
+              "description": "Return the page immediately before this opaque cursor. Mutually exclusive with after.",
               "type": "string"
             }
           },
           {
+            "description": "Return the page immediately after this opaque cursor. Mutually exclusive with before.",
             "explode": false,
             "in": "query",
-            "name": "ending_before",
+            "name": "after",
             "schema": {
+              "description": "Return the page immediately after this opaque cursor. Mutually exclusive with before.",
               "type": "string"
             }
           }
@@ -2536,6 +2838,147 @@
         "summary": "List the immutable releases of a homology database",
         "tags": [
           "Homology"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request GET \\\n  --url \"https://api.rafflesia.ai/v1/homology/databases/{database_id}/releases?limit=20\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\"\n"
+          }
+        ]
+      }
+    },
+    "/v1/homology/releases/{database_release_id}/filter-schema": {
+      "get": {
+        "description": "Returns the exact metadata fields, operators, limits, missing-field semantics, and search policies available when filtering one immutable homology database release. A release without a filter schema returns a structured error instead of silently ignoring the filter.",
+        "operationId": "homology_filter_schemas_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "database_release_id",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomologyFilterSchema"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-API-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HomologyErrorResponse"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Get a release's immutable homology filter schema",
+        "tags": [
+          "Homology"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request GET \\\n  --url \"https://api.rafflesia.ai/v1/homology/releases/{database_release_id}/filter-schema\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\"\n"
+          }
         ]
       }
     }

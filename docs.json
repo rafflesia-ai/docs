@@ -93,7 +93,8 @@
                   "POST /v1/homology",
                   "POST /v1/homology/batch",
                   "GET /v1/homology/databases",
-                  "GET /v1/homology/databases/{database_id}/releases"
+                  "GET /v1/homology/databases/{database_id}/releases",
+                  "GET /v1/homology/releases/{database_release_id}/filter-schema"
                 ]
               }
             ]
