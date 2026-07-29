@@ -99,7 +99,20 @@
                   "POST /v1/homology/batch",
                   "GET /v1/homology/databases",
                   "GET /v1/homology/databases/{database_id}/releases",
-                  "GET /v1/homology/releases/{database_release_id}/filter-schema"
+                  "GET /v1/homology/releases/{database_release_id}/filter-schema",
+                  "POST /v1/homology/target-spaces",
+                  "GET /v1/homology/target-spaces/{homology_target_space_id}"
+                ]
+              },
+              {
+                "group": "MSA",
+                "pages": [
+                  "POST /v1/sequences/msa/alphafold",
+                  "GET /v1/sequences/msa/alphafold/manifests/{manifest_object_id}",
+                  "GET /v1/sequences/msa/a3m/{a3m_object_id}",
+                  "POST /v1/sequences/msa/place",
+                  "POST /v1/sequences/msa/materialize",
+                  "GET /v1/sequences/msa/alignments/{alignment_object_id}"
                 ]
               }
             ]

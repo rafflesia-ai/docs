@@ -1,6 +1,439 @@
 {
   "components": {
     "schemas": {
+      "APIError": {
+        "additionalProperties": false,
+        "properties": {
+          "code": {
+            "description": "Stable specific error code.",
+            "type": "string"
+          },
+          "details": {
+            "additionalProperties": {},
+            "description": "Additional structured error details.",
+            "type": "object"
+          },
+          "doc_url": {
+            "description": "Stable documentation URL for this error code.",
+            "type": "string"
+          },
+          "message": {
+            "description": "Human-readable error message.",
+            "type": "string"
+          },
+          "param": {
+            "description": "Request field responsible for the error when known.",
+            "type": "string"
+          },
+          "type": {
+            "description": "Stable coarse error category.",
+            "enum": [
+              "invalid_request_error",
+              "resource_missing",
+              "resource_expired",
+              "conflict_error",
+              "rate_limit_error",
+              "authentication_error",
+              "permission_error",
+              "billing_error",
+              "api_error"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "type",
+          "code",
+          "message",
+          "doc_url"
+        ],
+        "type": "object"
+      },
+      "AlphaFoldMSAArtifact": {
+        "additionalProperties": false,
+        "properties": {
+          "download_url": {
+            "type": "string"
+          },
+          "object": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "query_length": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "role": {
+            "enum": [
+              "lane",
+              "unpaired",
+              "paired_source",
+              "manifest"
+            ],
+            "type": "string"
+          },
+          "sequence_count": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "role",
+          "object",
+          "download_url",
+          "sequence_count",
+          "query_length"
+        ],
+        "type": "object"
+      },
+      "AlphaFoldMSABuildData": {
+        "additionalProperties": false,
+        "properties": {
+          "assembly_algorithm": {
+            "enum": [
+              "query_anchored_a3m_v1"
+            ],
+            "type": "string"
+          },
+          "homology_engine": {
+            "enum": [
+              "tomato"
+            ],
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^afmsa_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "is_upstream_byte_exact": {
+            "type": "boolean"
+          },
+          "lanes": {
+            "items": {
+              "$ref": "#/components/schemas/AlphaFoldMSALaneData"
+            },
+            "maxItems": 4,
+            "minItems": 3,
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "manifest_download_url": {
+            "type": "string"
+          },
+          "manifest_object": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "object": {
+            "enum": [
+              "alphafold_msa_build"
+            ],
+            "type": "string"
+          },
+          "paired_source_a3m": {
+            "$ref": "#/components/schemas/AlphaFoldMSAArtifact"
+          },
+          "pairing": {
+            "$ref": "#/components/schemas/AlphaFoldMSAPairingMeasurements"
+          },
+          "profile": {
+            "enum": [
+              "af2",
+              "af2_multimer",
+              "af3"
+            ],
+            "type": "string"
+          },
+          "query": {
+            "$ref": "#/components/schemas/MSAPlacementQuery"
+          },
+          "unpaired_a3m": {
+            "$ref": "#/components/schemas/AlphaFoldMSAArtifact"
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "profile",
+          "query",
+          "homology_engine",
+          "assembly_algorithm",
+          "is_upstream_byte_exact",
+          "lanes",
+          "unpaired_a3m",
+          "manifest_object",
+          "manifest_download_url"
+        ],
+        "type": "object"
+      },
+      "AlphaFoldMSABuildRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/AlphaFoldMSABuildRequest.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "databases": {
+            "$ref": "#/components/schemas/AlphaFoldMSADatabaseReleases"
+          },
+          "limits": {
+            "$ref": "#/components/schemas/AlphaFoldMSASearchLimits",
+            "description": "Optional per-lane result limits. Omitted values resolve to the profile defaults and are recorded in the manifest."
+          },
+          "profile": {
+            "description": "AlphaFold assembly policy. af2_multimer adds the UniProt pairing-source MSA used by AlphaFold-Multimer.",
+            "enum": [
+              "af2",
+              "af2_multimer",
+              "af3"
+            ],
+            "type": "string"
+          },
+          "query": {
+            "$ref": "#/components/schemas/MSAPlacementQuery",
+            "description": "One protein chain. AlphaFold's protein data pipeline runs independently per unique chain sequence; complex-wide species pairing happens later."
+          }
+        },
+        "required": [
+          "profile",
+          "query",
+          "databases"
+        ],
+        "type": "object"
+      },
+      "AlphaFoldMSADatabaseReleases": {
+        "additionalProperties": false,
+        "properties": {
+          "bfd_uniref30": {
+            "description": "Immutable combined BFD plus UniRef30 release used by the full AF2 profile.",
+            "pattern": "^dbr_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "mgnify": {
+            "description": "Immutable Tomato-backed MGnify release.",
+            "pattern": "^dbr_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "small_bfd": {
+            "description": "Immutable small-BFD release used by AF2-small or AF3.",
+            "pattern": "^dbr_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "uniprot": {
+            "description": "Immutable UniProt release used as the species-pairing source by AF2-multimer and AF3.",
+            "pattern": "^dbr_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "uniref90": {
+            "description": "Immutable Tomato-backed UniRef90 release.",
+            "pattern": "^dbr_[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "uniref90",
+          "mgnify"
+        ],
+        "type": "object"
+      },
+      "AlphaFoldMSALaneData": {
+        "additionalProperties": false,
+        "properties": {
+          "a3m": {
+            "$ref": "#/components/schemas/AlphaFoldMSAArtifact"
+          },
+          "candidate_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "database_release_id": {
+            "type": "string"
+          },
+          "is_upstream_limit_unbounded": {
+            "type": "boolean"
+          },
+          "projected_row_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "receipt": {
+            "$ref": "#/components/schemas/AlphaFoldMSALaneReceipt"
+          },
+          "requested_max_results": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "role": {
+            "enum": [
+              "uniref90",
+              "mgnify",
+              "bfd_uniref30",
+              "small_bfd",
+              "uniprot"
+            ],
+            "type": "string"
+          },
+          "search_id": {
+            "type": "string"
+          },
+          "search_policy_id": {
+            "type": "string"
+          },
+          "skipped_alignment_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "upstream_max_results": {
+            "description": "AlphaFold upstream cap. Omitted when upstream does not impose a lane cap.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "role",
+          "database_release_id",
+          "search_id",
+          "search_policy_id",
+          "requested_max_results",
+          "is_upstream_limit_unbounded",
+          "candidate_count",
+          "projected_row_count",
+          "skipped_alignment_count",
+          "receipt",
+          "a3m"
+        ],
+        "type": "object"
+      },
+      "AlphaFoldMSALaneReceipt": {
+        "additionalProperties": false,
+        "properties": {
+          "execution_receipt_id": {
+            "type": "string"
+          },
+          "execution_receipt_sha256": {
+            "type": "string"
+          },
+          "outcome_id": {
+            "type": "string"
+          },
+          "outcome_sha256": {
+            "type": "string"
+          },
+          "result_sha256": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "outcome_id",
+          "outcome_sha256",
+          "execution_receipt_id",
+          "execution_receipt_sha256",
+          "result_sha256"
+        ],
+        "type": "object"
+      },
+      "AlphaFoldMSAPairingMeasurements": {
+        "additionalProperties": false,
+        "properties": {
+          "header_auxiliary_taxonomy_count": {
+            "description": "Headers carrying OX= or TaxID= metadata. This metadata is measured separately because the stock AlphaFold species parser does not consume it.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "header_species_id_count": {
+            "description": "Headers matching AlphaFold's standard UniProt sp|accession|entry_species or tr|accession|entry_species parser.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "is_species_pairing_ready": {
+            "description": "True when at least one header has a species id consumable by the stock AlphaFold parser.",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "header_species_id_count",
+          "header_auxiliary_taxonomy_count",
+          "is_species_pairing_ready"
+        ],
+        "type": "object"
+      },
+      "AlphaFoldMSASearchLimits": {
+        "additionalProperties": false,
+        "properties": {
+          "bfd_uniref30": {
+            "format": "int64",
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "mgnify": {
+            "format": "int64",
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "small_bfd": {
+            "format": "int64",
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "uniprot": {
+            "format": "int64",
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          },
+          "uniref90": {
+            "format": "int64",
+            "maximum": 1000,
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "type": "object"
+      },
+      "CreateHomologyTargetSpaceRequest": {
+        "additionalProperties": false,
+        "allOf": [
+          {
+            "not": {
+              "required": [
+                "database",
+                "database_release_id"
+              ],
+              "type": "object"
+            }
+          }
+        ],
+        "properties": {
+          "database": {
+            "description": "Database id or slug from homology.databases.list. Omit both database selectors to use the server-advertised default database and release. Mutually exclusive with database_release_id.",
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "database_release_id": {
+            "description": "Exact immutable dbr_ release id returned by the catalog. Omit both database selectors to use the server-advertised default database and release. Mutually exclusive with database.",
+            "pattern": "^dbr_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/HomologyDocumentFilter"
+          }
+        },
+        "required": [
+          "filter"
+        ],
+        "type": "object"
+      },
       "DatabaseSnapshot": {
         "additionalProperties": false,
         "properties": {
@@ -20,6 +453,341 @@
         "required": [
           "name",
           "version"
+        ],
+        "type": "object"
+      },
+      "EnvelopeAlphaFoldMSABuildData": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeAlphaFoldMSABuildData.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/AlphaFoldMSABuildData",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeHomologyTargetSpace": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeHomologyTargetSpace.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/HomologyTargetSpace",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeMSAMaterializeData": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeMSAMaterializeData.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MSAMaterializeData",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "EnvelopeMSAPlacementData": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/EnvelopeMSAPlacementData.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "data": {
+            "$ref": "#/components/schemas/MSAPlacementData",
+            "description": "Operation result data."
+          },
+          "error": {
+            "$ref": "#/components/schemas/APIError",
+            "description": "Structured error information."
+          },
+          "evidence": {
+            "$ref": "#/components/schemas/EvidenceSummary",
+            "description": "Mechanical evidence summary for agent inspection and chaining."
+          },
+          "ok": {
+            "description": "Whether the operation succeeded.",
+            "type": "boolean"
+          },
+          "provenance": {
+            "$ref": "#/components/schemas/Provenance",
+            "description": "Execution provenance."
+          },
+          "warnings": {
+            "description": "Non-fatal warnings.",
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "ok",
+          "warnings",
+          "provenance"
+        ],
+        "type": "object"
+      },
+      "ErrorDetail": {
+        "additionalProperties": false,
+        "properties": {
+          "location": {
+            "description": "Where the error occurred, e.g. 'body.items[3].tags' or 'path.thing-id'",
+            "type": "string"
+          },
+          "message": {
+            "description": "Error message text",
+            "type": "string"
+          },
+          "value": {
+            "description": "The value at the given location"
+          }
+        },
+        "type": "object"
+      },
+      "ErrorModel": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/ErrorModel.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "detail": {
+            "description": "A human-readable explanation specific to this occurrence of the problem.",
+            "examples": [
+              "Property foo is required but is missing."
+            ],
+            "type": "string"
+          },
+          "errors": {
+            "description": "Optional list of individual error details",
+            "items": {
+              "$ref": "#/components/schemas/ErrorDetail"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "instance": {
+            "description": "A URI reference that identifies the specific occurrence of the problem.",
+            "examples": [
+              "https://example.com/error-log/abc123"
+            ],
+            "format": "uri",
+            "type": "string"
+          },
+          "status": {
+            "description": "HTTP status code",
+            "examples": [
+              400
+            ],
+            "format": "int64",
+            "type": "integer"
+          },
+          "title": {
+            "description": "A short, human-readable summary of the problem type. This value should not change between occurrences of the error.",
+            "examples": [
+              "Bad Request"
+            ],
+            "type": "string"
+          },
+          "type": {
+            "default": "about:blank",
+            "description": "A URI reference to human-readable documentation for the error.",
+            "examples": [
+              "https://example.com/errors/example"
+            ],
+            "format": "uri",
+            "type": "string"
+          }
+        },
+        "type": "object"
+      },
+      "EvidenceSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "duration_ms": {
+            "description": "Primary elapsed duration in milliseconds when the response exposes one.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "input_refs": {
+            "description": "Input references detected from request fields such as object_id, structure_id, target_id, and sequence_id.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "object_refs": {
+            "description": "Object ids or object refs visible in the response/provenance.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "output_refs": {
+            "description": "Output references detected from response data and generated objects.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "row_count": {
+            "description": "Primary row count or returned row count when the response exposes one.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "warnings_count": {
+            "description": "Number of non-fatal warnings in the envelope.",
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "warnings_count"
         ],
         "type": "object"
       },
@@ -44,19 +812,28 @@
       "HomologyBatchQueryResponse": {
         "additionalProperties": false,
         "properties": {
+          "candidates": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyResult"
+            },
+            "type": "array"
+          },
           "database": {
             "$ref": "#/components/schemas/HomologyResponseDatabase"
+          },
+          "evidence_summary": {
+            "$ref": "#/components/schemas/HomologyEvidenceSummary"
+          },
+          "execution": {
+            "$ref": "#/components/schemas/HomologyResponseExecution"
           },
           "is_result_limit_reached": {
             "type": "boolean"
           },
-          "method": {
-            "$ref": "#/components/schemas/HomologyResponseMethod"
-          },
           "object": {
-            "description": "Always homology_search_result_set.",
+            "description": "Always homology_candidate_set.",
             "enum": [
-              "homology_search_result_set"
+              "homology_candidate_set"
             ],
             "type": "string"
           },
@@ -68,17 +845,14 @@
             "minimum": 0,
             "type": "integer"
           },
+          "ranking": {
+            "$ref": "#/components/schemas/HomologyResponseRanking"
+          },
           "receipt": {
             "$ref": "#/components/schemas/HomologyResponseReceipt"
           },
           "result_sha256": {
             "type": "string"
-          },
-          "results": {
-            "items": {
-              "$ref": "#/components/schemas/HomologyResult"
-            },
-            "type": "array"
           },
           "usage": {
             "$ref": "#/components/schemas/HomologyResponseUsage"
@@ -98,9 +872,11 @@
           "query_index",
           "query",
           "database",
-          "method",
+          "execution",
+          "ranking",
+          "evidence_summary",
           "receipt",
-          "results",
+          "candidates",
           "is_result_limit_reached",
           "result_sha256",
           "usage",
@@ -119,6 +895,33 @@
               ],
               "type": "object"
             }
+          },
+          {
+            "not": {
+              "required": [
+                "target_space_id",
+                "database"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "not": {
+              "required": [
+                "target_space_id",
+                "database_release_id"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "not": {
+              "required": [
+                "target_space_id",
+                "filter"
+              ],
+              "type": "object"
+            }
           }
         ],
         "properties": {
@@ -129,41 +932,31 @@
             "type": "string"
           },
           "database_release_id": {
-            "description": "Exact immutable release id. Omit both database selectors to use the server-advertised default database and its default release. Mutually exclusive with database.",
-            "maxLength": 256,
-            "minLength": 1,
+            "description": "Exact immutable dbr_ release id returned by the catalog. Omit both database selectors to use the server-advertised default database and its default release. Mutually exclusive with database.",
+            "pattern": "^dbr_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "evidence": {
+            "default": "pairwise_sequence_alignment",
+            "enum": [
+              "candidate_measurement",
+              "pairwise_sequence_alignment"
+            ],
             "type": "string"
           },
           "filter": {
             "$ref": "#/components/schemas/HomologyDocumentFilter",
-            "description": "Optional exact metadata predicate applied before candidate generation."
+            "description": "Optional exact metadata predicate applied before the release-owned search policy."
           },
           "guarantee": {
             "default": "approximate",
-            "description": "Minimum search guarantee. Approximate permits a qualified approximate policy or a stronger exhaustive fallback; exhaustive requires the release's exhaustive reference policy.",
             "enum": [
               "approximate",
               "exhaustive"
             ],
             "type": "string"
           },
-          "include": {
-            "default": [
-              "alignment"
-            ],
-            "description": "Scientific result representations to return. Pairwise alignment is included by default. Pass an empty array for candidate measurements only.",
-            "items": {
-              "enum": [
-                "alignment"
-              ],
-              "type": "string"
-            },
-            "maxItems": 1,
-            "type": "array",
-            "uniqueItems": true
-          },
           "include_attributes": {
-            "description": "Optional target attributes to project. The current Tomato catalog can project record_id; unsupported attributes are rejected instead of fabricated.",
             "items": {
               "enum": [
                 "record_id"
@@ -179,9 +972,9 @@
           },
           "limit": {
             "default": 25,
-            "description": "Maximum number of ranked results to return per query. queries count multiplied by limit must fit the include-sensitive aggregate batch cap.",
+            "description": "Maximum ranked results returned for each query.",
             "format": "int64",
-            "maximum": 10000,
+            "maximum": 1000,
             "minimum": 1,
             "type": "integer"
           },
@@ -195,14 +988,17 @@
             "type": "array"
           },
           "significance": {
-            "default": "auto",
-            "description": "Database-aware significance policy. Auto requests significance when alignment evidence is returned and skips it for candidate measurements only.",
+            "default": "if_available",
             "enum": [
-              "auto",
               "not_requested",
               "if_available",
               "required"
             ],
+            "type": "string"
+          },
+          "target_space_id": {
+            "description": "Immutable reusable target space shared by every query. Mutually exclusive with database, database_release_id, and filter.",
+            "pattern": "^htsp_[0-9a-f]{64}$",
             "type": "string"
           }
         },
@@ -413,6 +1209,7 @@
           },
           "id": {
             "description": "Immutable dbr_ release id.",
+            "pattern": "^dbr_[0-9a-f]{64}$",
             "type": "string"
           },
           "manifest_sha256": {
@@ -648,6 +1445,67 @@
         ],
         "type": "object"
       },
+      "HomologyEvidenceAvailability": {
+        "additionalProperties": false,
+        "properties": {
+          "affected_result_count": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "result_count": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "not_requested",
+              "returned",
+              "partial",
+              "unavailable"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "result_count",
+          "affected_result_count"
+        ],
+        "type": "object"
+      },
+      "HomologyEvidenceSummary": {
+        "additionalProperties": false,
+        "properties": {
+          "alignment": {
+            "$ref": "#/components/schemas/HomologyEvidenceAvailability"
+          },
+          "is_complete": {
+            "type": "boolean"
+          },
+          "requested": {
+            "enum": [
+              "candidate_measurement",
+              "pairwise_sequence_alignment"
+            ],
+            "type": "string"
+          },
+          "significance": {
+            "$ref": "#/components/schemas/HomologySignificanceAvailability"
+          }
+        },
+        "required": [
+          "requested",
+          "alignment",
+          "significance",
+          "is_complete"
+        ],
+        "type": "object"
+      },
       "HomologyFilterAnd": {
         "additionalProperties": false,
         "properties": {
@@ -797,7 +1655,7 @@
           "value": {
             "oneOf": [
               {
-                "maxLength": 16384,
+                "maxLength": 16382,
                 "type": "string"
               },
               {
@@ -961,7 +1819,7 @@
             "items": {
               "oneOf": [
                 {
-                  "maxLength": 16384,
+                  "maxLength": 16382,
                   "type": "string"
                 },
                 {
@@ -1288,6 +2146,13 @@
             "format": "int64",
             "type": "integer"
           },
+          "sequence_identity_ratio": {
+            "description": "Identical residue count divided by aligned residue count.",
+            "format": "double",
+            "maximum": 1,
+            "minimum": 0,
+            "type": "number"
+          },
           "target_coverage_ratio": {
             "format": "double",
             "type": "number"
@@ -1318,6 +2183,7 @@
           "target_coverage_ratio",
           "aligned_residue_count",
           "identical_residue_count",
+          "sequence_identity_ratio",
           "gap_residue_count",
           "gap_opening_count",
           "cigar"
@@ -1383,6 +2249,33 @@
           }
         ]
       },
+      "HomologyRankingComparator": {
+        "additionalProperties": false,
+        "properties": {
+          "field": {
+            "enum": [
+              "maxsim.bidirectional",
+              "affine.normalized_score",
+              "affine.raw_score",
+              "late_interaction.distance",
+              "target.ordinal"
+            ],
+            "type": "string"
+          },
+          "order": {
+            "enum": [
+              "ascending",
+              "descending"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "field",
+          "order"
+        ],
+        "type": "object"
+      },
       "HomologyRequest": {
         "additionalProperties": false,
         "allOf": [
@@ -1391,6 +2284,33 @@
               "required": [
                 "database",
                 "database_release_id"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "not": {
+              "required": [
+                "target_space_id",
+                "database"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "not": {
+              "required": [
+                "target_space_id",
+                "database_release_id"
+              ],
+              "type": "object"
+            }
+          },
+          {
+            "not": {
+              "required": [
+                "target_space_id",
+                "filter"
               ],
               "type": "object"
             }
@@ -1404,41 +2324,34 @@
             "type": "string"
           },
           "database_release_id": {
-            "description": "Exact immutable release id. Omit both database selectors to use the server-advertised default database and its default release. Mutually exclusive with database.",
-            "maxLength": 256,
-            "minLength": 1,
+            "description": "Exact immutable dbr_ release id returned by the catalog. Omit both database selectors to use the server-advertised default database and its default release. Mutually exclusive with database.",
+            "pattern": "^dbr_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "evidence": {
+            "default": "pairwise_sequence_alignment",
+            "description": "Stable scientific evidence representation. The release-owned final ranking measurement is always returned independently.",
+            "enum": [
+              "candidate_measurement",
+              "pairwise_sequence_alignment"
+            ],
             "type": "string"
           },
           "filter": {
             "$ref": "#/components/schemas/HomologyDocumentFilter",
-            "description": "Optional exact metadata predicate applied before candidate generation."
+            "description": "Optional exact metadata predicate applied before the release-owned search policy."
           },
           "guarantee": {
             "default": "approximate",
-            "description": "Minimum search guarantee. Approximate permits a qualified approximate policy or a stronger exhaustive fallback; exhaustive requires the release's exhaustive reference policy.",
+            "description": "Minimum search guarantee. Approximate permits the release-selected qualified policy or a stronger exhaustive fallback; exhaustive requires the reference policy.",
             "enum": [
               "approximate",
               "exhaustive"
             ],
             "type": "string"
           },
-          "include": {
-            "default": [
-              "alignment"
-            ],
-            "description": "Scientific result representations to return. Pairwise alignment is included by default. Pass an empty array for candidate measurements only.",
-            "items": {
-              "enum": [
-                "alignment"
-              ],
-              "type": "string"
-            },
-            "maxItems": 1,
-            "type": "array",
-            "uniqueItems": true
-          },
           "include_attributes": {
-            "description": "Optional target attributes to project. The current Tomato catalog can project record_id; unsupported attributes are rejected instead of fabricated.",
+            "description": "Optional release-backed target attributes to include.",
             "items": {
               "enum": [
                 "record_id"
@@ -1454,9 +2367,9 @@
           },
           "limit": {
             "default": 25,
-            "description": "Maximum number of ranked results to return.",
+            "description": "Maximum ranked results to return.",
             "format": "int64",
-            "maximum": 10000,
+            "maximum": 1000,
             "minimum": 1,
             "type": "integer"
           },
@@ -1465,14 +2378,18 @@
             "description": "One typed biological query."
           },
           "significance": {
-            "default": "auto",
-            "description": "Database-aware significance policy. Auto requests significance when alignment evidence is returned and skips it for candidate measurements only.",
+            "default": "if_available",
+            "description": "Database-aware significance requirement. if_available never invalidates an otherwise valid alignment.",
             "enum": [
-              "auto",
               "not_requested",
               "if_available",
               "required"
             ],
+            "type": "string"
+          },
+          "target_space_id": {
+            "description": "Immutable reusable target space returned by homology.target_spaces.create. Mutually exclusive with database, database_release_id, and filter.",
+            "pattern": "^htsp_[0-9a-f]{64}$",
             "type": "string"
           }
         },
@@ -1484,20 +2401,30 @@
       "HomologyResponse": {
         "additionalProperties": false,
         "properties": {
+          "candidates": {
+            "description": "Ranked retrieval candidates. These are measurements, not asserted homologs.",
+            "items": {
+              "$ref": "#/components/schemas/HomologyResult"
+            },
+            "type": "array"
+          },
           "database": {
             "$ref": "#/components/schemas/HomologyResponseDatabase"
+          },
+          "evidence_summary": {
+            "$ref": "#/components/schemas/HomologyEvidenceSummary"
+          },
+          "execution": {
+            "$ref": "#/components/schemas/HomologyResponseExecution"
           },
           "is_result_limit_reached": {
             "description": "True when additional ranked targets existed beyond limit. False means the returned list exhausted the searched population.",
             "type": "boolean"
           },
-          "method": {
-            "$ref": "#/components/schemas/HomologyResponseMethod"
-          },
           "object": {
-            "description": "Always homology_search_result_set.",
+            "description": "Always homology_candidate_set.",
             "enum": [
-              "homology_search_result_set"
+              "homology_candidate_set"
             ],
             "type": "string"
           },
@@ -1507,6 +2434,9 @@
           "query": {
             "$ref": "#/components/schemas/HomologyResponseQuery"
           },
+          "ranking": {
+            "$ref": "#/components/schemas/HomologyResponseRanking"
+          },
           "receipt": {
             "$ref": "#/components/schemas/HomologyResponseReceipt"
           },
@@ -1515,12 +2445,6 @@
           },
           "result_sha256": {
             "type": "string"
-          },
-          "results": {
-            "items": {
-              "$ref": "#/components/schemas/HomologyResult"
-            },
-            "type": "array"
           },
           "usage": {
             "$ref": "#/components/schemas/HomologyResponseUsage"
@@ -1540,9 +2464,11 @@
           "request_id",
           "query",
           "database",
-          "method",
+          "execution",
+          "ranking",
+          "evidence_summary",
           "receipt",
-          "results",
+          "candidates",
           "is_result_limit_reached",
           "result_sha256",
           "usage",
@@ -1564,6 +2490,7 @@
             "type": "string"
           },
           "release_id": {
+            "pattern": "^dbr_[0-9a-f]{64}$",
             "type": "string"
           },
           "searched_residue_count": {
@@ -1578,6 +2505,11 @@
           },
           "slug": {
             "type": "string"
+          },
+          "target_space_id": {
+            "description": "Immutable reusable target-space identity when this search consumed one.",
+            "pattern": "^htsp_[0-9a-f]{64}$",
+            "type": "string"
           }
         },
         "required": [
@@ -1590,36 +2522,17 @@
         ],
         "type": "object"
       },
-      "HomologyResponseMethod": {
+      "HomologyResponseExecution": {
         "additionalProperties": false,
         "properties": {
-          "calibration_id": {
-            "type": "string"
-          },
           "engine": {
             "type": "string"
           },
           "engine_release": {
             "type": "string"
           },
-          "is_deterministic": {
-            "type": "boolean"
-          },
-          "is_exhaustive": {
-            "type": "boolean"
-          },
-          "outcome": {
-            "enum": [
-              "complete_exact",
-              "complete_for_policy"
-            ],
-            "type": "string"
-          },
-          "policy_resolution": {
-            "$ref": "#/components/schemas/HomologySearchPolicyResolution"
-          },
-          "search_policy_id": {
-            "type": "string"
+          "policy": {
+            "$ref": "#/components/schemas/HomologyResponsePolicy"
           },
           "semantic_profile_id": {
             "type": "string"
@@ -1627,11 +2540,8 @@
         },
         "required": [
           "engine",
-          "search_policy_id",
-          "policy_resolution",
           "semantic_profile_id",
-          "is_exhaustive",
-          "is_deterministic"
+          "policy"
         ],
         "type": "object"
       },
@@ -1666,6 +2576,58 @@
         ],
         "type": "object"
       },
+      "HomologyResponsePolicy": {
+        "additionalProperties": false,
+        "properties": {
+          "is_deterministic": {
+            "type": "boolean"
+          },
+          "is_exhaustive": {
+            "type": "boolean"
+          },
+          "is_fallback": {
+            "type": "boolean"
+          },
+          "outcome": {
+            "enum": [
+              "complete_exact",
+              "complete_for_policy"
+            ],
+            "type": "string"
+          },
+          "requested_guarantee": {
+            "enum": [
+              "approximate",
+              "exhaustive"
+            ],
+            "type": "string"
+          },
+          "resolution_reason": {
+            "type": "string"
+          },
+          "resolved_guarantee": {
+            "enum": [
+              "approximate",
+              "exhaustive"
+            ],
+            "type": "string"
+          },
+          "search_policy_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "requested_guarantee",
+          "resolved_guarantee",
+          "search_policy_id",
+          "outcome",
+          "is_fallback",
+          "is_exhaustive",
+          "is_deterministic",
+          "resolution_reason"
+        ],
+        "type": "object"
+      },
       "HomologyResponseQuery": {
         "additionalProperties": false,
         "properties": {
@@ -1691,6 +2653,47 @@
           "normalized_length",
           "normalization_id",
           "sha256"
+        ],
+        "type": "object"
+      },
+      "HomologyResponseRanking": {
+        "additionalProperties": false,
+        "properties": {
+          "order": {
+            "enum": [
+              "ascending",
+              "descending"
+            ],
+            "type": "string"
+          },
+          "primary_measurement": {
+            "enum": [
+              "maxsim.bidirectional",
+              "affine.normalized_score"
+            ],
+            "type": "string"
+          },
+          "scope": {
+            "enum": [
+              "resolved_policy_frontier"
+            ],
+            "type": "string"
+          },
+          "tie_breakers": {
+            "items": {
+              "$ref": "#/components/schemas/HomologyRankingComparator"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "primary_measurement",
+          "order",
+          "tie_breakers",
+          "scope"
         ],
         "type": "object"
       },
@@ -1740,6 +2743,9 @@
       "HomologyResponseUsage": {
         "additionalProperties": false,
         "properties": {
+          "billable_formula_id": {
+            "type": "string"
+          },
           "billable_units": {
             "format": "int64",
             "minimum": 0,
@@ -1764,24 +2770,18 @@
       "HomologyResult": {
         "additionalProperties": false,
         "properties": {
-          "affine": {
-            "$ref": "#/components/schemas/HomologyAffineMeasurements"
-          },
           "alignment": {
             "$ref": "#/components/schemas/HomologyPairwiseAlignment"
           },
-          "late_interaction": {
-            "$ref": "#/components/schemas/HomologyLateInteractionMeasurements"
-          },
-          "maxsim": {
-            "$ref": "#/components/schemas/HomologyMaxSimMeasurements"
+          "measurements": {
+            "$ref": "#/components/schemas/HomologyResultMeasurements"
           },
           "rank": {
             "format": "int64",
             "type": "integer"
           },
           "significance": {
-            "$ref": "#/components/schemas/HomologySignificanceMeasurements"
+            "$ref": "#/components/schemas/HomologyResultSignificance"
           },
           "target": {
             "$ref": "#/components/schemas/HomologyResultTarget"
@@ -1789,7 +2789,47 @@
         },
         "required": [
           "rank",
-          "target"
+          "target",
+          "measurements"
+        ],
+        "type": "object"
+      },
+      "HomologyResultMeasurements": {
+        "additionalProperties": false,
+        "properties": {
+          "affine": {
+            "$ref": "#/components/schemas/HomologyAffineMeasurements"
+          },
+          "late_interaction": {
+            "$ref": "#/components/schemas/HomologyLateInteractionMeasurements"
+          },
+          "maxsim": {
+            "$ref": "#/components/schemas/HomologyMaxSimMeasurements"
+          }
+        },
+        "type": "object"
+      },
+      "HomologyResultSignificance": {
+        "additionalProperties": false,
+        "properties": {
+          "measurements": {
+            "$ref": "#/components/schemas/HomologySignificanceMeasurements"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "supported_empirical",
+              "supported_tail_model",
+              "insufficient_tail_resolution",
+              "out_of_support"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
         ],
         "type": "object"
       },
@@ -1822,10 +2862,14 @@
       "HomologySearchCapability": {
         "additionalProperties": false,
         "properties": {
-          "default_search_policy_id": {
+          "billable_formula_id": {
+            "enum": [
+              "tomato.object_reads_plus_logical_mib.v1"
+            ],
             "type": "string"
           },
           "evidence": {
+            "description": "Stable scientific evidence representations accepted by this release.",
             "items": {
               "type": "string"
             },
@@ -1837,6 +2881,16 @@
           "filter_schema": {
             "$ref": "#/components/schemas/HomologyFilterSchema"
           },
+          "guarantees": {
+            "description": "Public minimum guarantees. The resolved policy remains release-owned.",
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
           "query_kinds": {
             "items": {
               "type": "string"
@@ -1846,7 +2900,90 @@
               "null"
             ]
           },
-          "search_policy_ids": {
+          "ranking": {
+            "$ref": "#/components/schemas/HomologyResponseRanking",
+            "description": "The single immutable ordering owned by this release."
+          },
+          "significance": {
+            "$ref": "#/components/schemas/HomologySignificanceCapability"
+          },
+          "status": {
+            "enum": [
+              "available",
+              "unavailable"
+            ],
+            "type": "string"
+          },
+          "unavailable_reason": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "status",
+          "query_kinds",
+          "guarantees",
+          "evidence",
+          "significance",
+          "billable_formula_id"
+        ],
+        "type": "object"
+      },
+      "HomologySearchResponse": {
+        "$ref": "#/components/schemas/HomologyResponse"
+      },
+      "HomologySignificanceAvailability": {
+        "additionalProperties": false,
+        "properties": {
+          "affected_result_count": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "reason": {
+            "type": "string"
+          },
+          "requirement": {
+            "enum": [
+              "not_requested",
+              "if_available",
+              "required"
+            ],
+            "type": "string"
+          },
+          "result_count": {
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "status": {
+            "enum": [
+              "not_requested",
+              "returned",
+              "partial",
+              "unavailable"
+            ],
+            "type": "string"
+          }
+        },
+        "required": [
+          "requirement",
+          "status",
+          "result_count",
+          "affected_result_count"
+        ],
+        "type": "object"
+      },
+      "HomologySignificanceCapability": {
+        "additionalProperties": false,
+        "properties": {
+          "calibration_scope": {
+            "enum": [
+              "release",
+              "target_space"
+            ],
+            "type": "string"
+          },
+          "requirements": {
             "items": {
               "type": "string"
             },
@@ -1868,85 +3005,18 @@
         },
         "required": [
           "status",
-          "query_kinds",
-          "search_policy_ids",
-          "evidence"
+          "requirements"
         ],
         "type": "object"
-      },
-      "HomologySearchPolicyResolution": {
-        "additionalProperties": false,
-        "properties": {
-          "authority": {
-            "enum": [
-              "exhaustive_reference",
-              "qualified_evaluation",
-              "exhaustive_fallback",
-              "empty_target_space",
-              "unqualified_prototype"
-            ],
-            "type": "string"
-          },
-          "id": {
-            "pattern": "^hpolres_[0-9a-f]{64}$",
-            "type": "string"
-          },
-          "is_fallback": {
-            "type": "boolean"
-          },
-          "quality_evaluation_ids": {
-            "items": {
-              "type": "string"
-            },
-            "type": "array"
-          },
-          "reason": {
-            "enum": [
-              "release_default_is_exhaustive",
-              "published_default_is_qualified",
-              "explicit_exhaustive_reference",
-              "explicit_policy_is_qualified",
-              "no_qualified_evaluation",
-              "no_exact_target_space_evaluation",
-              "target_space_is_empty",
-              "unqualified_prototype"
-            ],
-            "type": "string"
-          },
-          "release_default_policy_id": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "requested_policy_id": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "resolved_policy_id": {
-            "minLength": 1,
-            "type": "string"
-          },
-          "target_space_id": {
-            "pattern": "^htsp_[0-9a-f]{64}$",
-            "type": "string"
-          }
-        },
-        "required": [
-          "id",
-          "release_default_policy_id",
-          "resolved_policy_id",
-          "authority",
-          "quality_evaluation_ids",
-          "is_fallback",
-          "reason"
-        ],
-        "type": "object"
-      },
-      "HomologySearchResponse": {
-        "$ref": "#/components/schemas/HomologyResponse"
       },
       "HomologySignificanceMeasurements": {
         "additionalProperties": false,
         "properties": {
+          "bit_score": {
+            "description": "Database-size-independent score from the fitted tail: (lambda*raw_score - ln k)/ln 2. When support_status is supported_tail_model the identity expected_false_hits = searched_sequence_count * 2^-bit_score holds exactly. In the counted regime the probability comes from the empirical null instead, so treat bit_score there as the same score on a comparable scale, not as a restatement of expected_false_hits.",
+            "format": "double",
+            "type": "number"
+          },
           "calibration_bin": {
             "type": "string"
           },
@@ -1957,7 +3027,18 @@
             "format": "int64",
             "type": "integer"
           },
+          "confidence": {
+            "description": "Bucket derived from expected_false_hits: high at 1e-5 or below, moderate to 1e-3, low to 1, none above. Omitted when no E-value is supported.",
+            "enum": [
+              "high",
+              "moderate",
+              "low",
+              "none"
+            ],
+            "type": "string"
+          },
           "expected_false_hits": {
+            "description": "Expected number of sequences in this search scoring at least this well by chance, over searched_sequence_count. Comparable to a BLAST E-value.",
             "format": "double",
             "type": "number"
           },
@@ -1965,7 +3046,12 @@
             "format": "double",
             "type": "number"
           },
+          "is_family_wise_lower_bound": {
+            "description": "True when a null replay frontier truncated above this score, making family_wise_exceedance_probability a lower bound.",
+            "type": "boolean"
+          },
           "minimum_resolvable_probability": {
+            "description": "Smallest probability the counted null can resolve. Below it the estimate comes from the fitted tail model, reported as support_status supported_tail_model.",
             "format": "double",
             "type": "number"
           },
@@ -1977,6 +3063,15 @@
             "format": "double",
             "type": "number"
           },
+          "searched_residue_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "searched_sequence_count": {
+            "description": "Sequences actually searched after any metadata filter. expected_false_hits is scaled to this, so it stays comparable across filtered and unfiltered searches.",
+            "format": "int64",
+            "type": "integer"
+          },
           "support_status": {
             "enum": [
               "supported_empirical",
@@ -1986,12 +3081,758 @@
               "missing_calibration"
             ],
             "type": "string"
+          },
+          "tail_model": {
+            "$ref": "#/components/schemas/HomologyTailModel"
           }
         },
         "required": [
+          "is_family_wise_lower_bound",
+          "searched_sequence_count",
+          "searched_residue_count",
           "calibration_sample_count",
           "support_status",
           "calibration_id"
+        ],
+        "type": "object"
+      },
+      "HomologyTailModel": {
+        "additionalProperties": false,
+        "properties": {
+          "fit_exceedance_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "holdout_exceedance_count": {
+            "description": "Held-out observations the goodness-of-fit test used. Read the KS distance with this; the distance alone means little without the sample size behind it.",
+            "format": "int64",
+            "type": "integer"
+          },
+          "holdout_kolmogorov_smirnov": {
+            "format": "double",
+            "type": "number"
+          },
+          "holdout_significance_level": {
+            "format": "double",
+            "type": "number"
+          },
+          "k": {
+            "format": "double",
+            "type": "number"
+          },
+          "lambda": {
+            "format": "double",
+            "type": "number"
+          },
+          "threshold_score": {
+            "description": "Lower bound of the fitted tail region. Extrapolation is only actually used once the counted null runs out, which support_status reports as supported_tail_model; a score above this threshold may still be served empirically.",
+            "format": "double",
+            "type": "number"
+          }
+        },
+        "required": [
+          "threshold_score",
+          "lambda",
+          "k",
+          "fit_exceedance_count",
+          "holdout_exceedance_count",
+          "holdout_kolmogorov_smirnov",
+          "holdout_significance_level"
+        ],
+        "type": "object"
+      },
+      "HomologyTargetSpace": {
+        "additionalProperties": false,
+        "properties": {
+          "canonical_filter_sha256": {
+            "type": "string"
+          },
+          "corpus_snapshot_id": {
+            "type": "string"
+          },
+          "database_release_id": {
+            "type": "string"
+          },
+          "eligibility_authority_id": {
+            "type": "string"
+          },
+          "eligible_record_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "eligible_residue_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "filter": {
+            "$ref": "#/components/schemas/HomologyDocumentFilter"
+          },
+          "filter_schema_id": {
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^htsp_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "homology_target_space"
+            ],
+            "type": "string"
+          },
+          "search_policy_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "semantic_profile_id": {
+            "type": "string"
+          },
+          "target_space_authority_id": {
+            "type": "string"
+          },
+          "total_record_count": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "unknown_record_count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "object",
+          "database_release_id",
+          "corpus_snapshot_id",
+          "semantic_profile_id",
+          "filter_schema_id",
+          "filter",
+          "canonical_filter_sha256",
+          "total_record_count",
+          "eligible_record_count",
+          "eligible_residue_count",
+          "unknown_record_count",
+          "eligibility_authority_id",
+          "target_space_authority_id",
+          "search_policy_ids"
+        ],
+        "type": "object"
+      },
+      "MSAEncoderDisclosure": {
+        "additionalProperties": false,
+        "properties": {
+          "conformance_class": {
+            "enum": [
+              "byte_exact_canonical",
+              "compatible_noncanonical"
+            ],
+            "type": "string"
+          },
+          "encoder_compatibility_class_id": {
+            "type": "string"
+          },
+          "encoder_numerics_id": {
+            "type": "string"
+          },
+          "observed_canonical_precision": {
+            "type": "string"
+          },
+          "semantic_profile_id": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "semantic_profile_id",
+          "encoder_numerics_id",
+          "encoder_compatibility_class_id",
+          "conformance_class",
+          "observed_canonical_precision"
+        ],
+        "type": "object"
+      },
+      "MSAExternalArtifactDigest": {
+        "additionalProperties": false,
+        "properties": {
+          "sha256": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "size_bytes": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sha256",
+          "size_bytes"
+        ],
+        "type": "object"
+      },
+      "MSAHomologyReceiptReference": {
+        "additionalProperties": false,
+        "properties": {
+          "execution_receipt_id": {
+            "minLength": 1,
+            "type": "string"
+          },
+          "execution_receipt_sha256": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "id": {
+            "pattern": "^out_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "sha256": {
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "sha256",
+          "execution_receipt_id",
+          "execution_receipt_sha256"
+        ],
+        "type": "object"
+      },
+      "MSAMaterializationMeasurements": {
+        "additionalProperties": false,
+        "properties": {
+          "backbone_reads": {
+            "$ref": "#/components/schemas/MSAObjectReadMeasurements"
+          },
+          "backbone_rows_read": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "backbone_stream_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "backbone_stream_chunks": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "elapsed_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "is_backbone_invariant": {
+            "type": "boolean"
+          },
+          "is_backbone_sha256_valid": {
+            "type": "boolean"
+          },
+          "is_cache_hit": {
+            "type": "boolean"
+          },
+          "is_query_residue_preserved": {
+            "type": "boolean"
+          },
+          "is_streaming": {
+            "type": "boolean"
+          },
+          "materialized_rows": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maximum_input_row_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "maximum_output_row_bytes": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "is_cache_hit",
+          "is_streaming",
+          "is_backbone_sha256_valid",
+          "is_backbone_invariant",
+          "is_query_residue_preserved",
+          "backbone_rows_read",
+          "materialized_rows",
+          "maximum_input_row_bytes",
+          "maximum_output_row_bytes",
+          "backbone_stream_bytes",
+          "backbone_stream_chunks",
+          "backbone_reads",
+          "elapsed_ms"
+        ],
+        "type": "object"
+      },
+      "MSAMaterializeData": {
+        "additionalProperties": false,
+        "properties": {
+          "alignment_length": {
+            "format": "int64",
+            "minimum": 1,
+            "type": "integer"
+          },
+          "alignment_object": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "download_url": {
+            "type": "string"
+          },
+          "measurements": {
+            "$ref": "#/components/schemas/MSAMaterializationMeasurements"
+          },
+          "object": {
+            "enum": [
+              "msa_alignment"
+            ],
+            "type": "string"
+          },
+          "placement_id": {
+            "pattern": "^msap_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "sequence_count": {
+            "format": "int64",
+            "minimum": 2,
+            "type": "integer"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "placement_id",
+          "alignment_object",
+          "download_url",
+          "sequence_count",
+          "alignment_length",
+          "measurements",
+          "warnings"
+        ],
+        "type": "object"
+      },
+      "MSAMaterializeRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/MSAMaterializeRequest.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "placement_object_id": {
+            "description": "Placement manifest object returned by sequences.msa.place.",
+            "pattern": "^sha256:[0-9a-f]{64}$",
+            "type": "string"
+          }
+        },
+        "required": [
+          "placement_object_id"
+        ],
+        "type": "object"
+      },
+      "MSAObjectReadMeasurements": {
+        "additionalProperties": false,
+        "properties": {
+          "directory_page_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "directory_page_reads": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "object_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "object_reads": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "peak_resident_directory_pages": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "range_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "range_reads": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "record_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "record_reads": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "remote_requests": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "retry_count": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "object_reads",
+          "object_bytes",
+          "range_reads",
+          "range_bytes",
+          "record_reads",
+          "record_bytes",
+          "directory_page_reads",
+          "directory_page_bytes",
+          "peak_resident_directory_pages",
+          "remote_requests",
+          "retry_count"
+        ],
+        "type": "object"
+      },
+      "MSAPlacementArtifact": {
+        "additionalProperties": false,
+        "properties": {
+          "alignment_object": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "base_alignment": {
+            "$ref": "#/components/schemas/MSAExternalArtifactDigest"
+          },
+          "base_column_count": {
+            "description": "Known base column count, or zero when the exact-cache path did not read component metadata.",
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "kind": {
+            "enum": [
+              "cached_alignment",
+              "sparse_overlay",
+              "full_alignment"
+            ],
+            "type": "string"
+          },
+          "materialized_column_count": {
+            "description": "Known materialized column count, or zero until explicit materialization.",
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          },
+          "overlay_object": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "sequence_count": {
+            "description": "Known row count, or zero when exact-cache placement intentionally returns only the external digest.",
+            "format": "int64",
+            "minimum": 0,
+            "type": "integer"
+          }
+        },
+        "required": [
+          "kind",
+          "sequence_count",
+          "base_column_count",
+          "materialized_column_count"
+        ],
+        "type": "object"
+      },
+      "MSAPlacementData": {
+        "additionalProperties": false,
+        "properties": {
+          "artifact": {
+            "$ref": "#/components/schemas/MSAPlacementArtifact"
+          },
+          "backbone_id": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "component_attachment_id": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "component_id": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "database_release_id": {
+            "pattern": "^dbr_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "encoder": {
+            "$ref": "#/components/schemas/MSAEncoderDisclosure"
+          },
+          "execution": {
+            "$ref": "#/components/schemas/MSAPlacementExecution"
+          },
+          "forest_id": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "homology_receipt": {
+            "$ref": "#/components/schemas/MSAHomologyReceiptReference"
+          },
+          "id": {
+            "pattern": "^msap_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "msa_release_id": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "object": {
+            "enum": [
+              "msa_placement"
+            ],
+            "type": "string"
+          },
+          "placement_object": {
+            "$ref": "#/components/schemas/ObjectRef"
+          },
+          "query": {
+            "$ref": "#/components/schemas/MSAPlacementQuery"
+          },
+          "release_attachment_id": {
+            "pattern": "^[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "warnings": {
+            "items": {
+              "$ref": "#/components/schemas/Warning"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          }
+        },
+        "required": [
+          "object",
+          "id",
+          "query",
+          "database_release_id",
+          "homology_receipt",
+          "release_attachment_id",
+          "component_attachment_id",
+          "msa_release_id",
+          "component_id",
+          "forest_id",
+          "backbone_id",
+          "artifact",
+          "execution",
+          "encoder",
+          "placement_object",
+          "warnings"
+        ],
+        "type": "object"
+      },
+      "MSAPlacementExecution": {
+        "additionalProperties": false,
+        "properties": {
+          "algorithm": {
+            "type": "string"
+          },
+          "anchor_record_ids": {
+            "items": {
+              "type": "string"
+            },
+            "type": [
+              "array",
+              "null"
+            ]
+          },
+          "attachment_reads": {
+            "$ref": "#/components/schemas/MSAObjectReadMeasurements"
+          },
+          "backbone_reads": {
+            "$ref": "#/components/schemas/MSAObjectReadMeasurements"
+          },
+          "catalog_elapsed_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "execution_elapsed_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "handoff_elapsed_ms": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "is_backend_invoked": {
+            "type": "boolean"
+          },
+          "is_complete_membership_read": {
+            "type": "boolean"
+          },
+          "is_exact_component_cache_hit": {
+            "type": "boolean"
+          },
+          "is_full_backbone_read": {
+            "type": "boolean"
+          },
+          "is_homology_receipt_valid": {
+            "type": "boolean"
+          },
+          "is_target_sequence_valid": {
+            "type": "boolean"
+          },
+          "membership_reads": {
+            "$ref": "#/components/schemas/MSAObjectReadMeasurements"
+          },
+          "strategy": {
+            "enum": [
+              "exact_component_cache",
+              "tomato_affine_verified_backbone_delta",
+              "tomato_affine_native_famsa_fallback"
+            ],
+            "type": "string"
+          },
+          "target_validation_reads": {
+            "$ref": "#/components/schemas/MSAObjectReadMeasurements"
+          },
+          "total_elapsed_ms": {
+            "format": "int64",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "algorithm",
+          "strategy",
+          "is_exact_component_cache_hit",
+          "is_homology_receipt_valid",
+          "is_target_sequence_valid",
+          "is_complete_membership_read",
+          "is_backend_invoked",
+          "is_full_backbone_read",
+          "anchor_record_ids",
+          "attachment_reads",
+          "target_validation_reads",
+          "membership_reads",
+          "backbone_reads",
+          "catalog_elapsed_ms",
+          "handoff_elapsed_ms",
+          "execution_elapsed_ms",
+          "total_elapsed_ms"
+        ],
+        "type": "object"
+      },
+      "MSAPlacementQuery": {
+        "additionalProperties": false,
+        "properties": {
+          "id": {
+            "description": "Caller-supplied FASTA record identifier for the placed query.",
+            "maxLength": 256,
+            "minLength": 1,
+            "type": "string"
+          },
+          "kind": {
+            "description": "Always protein_sequence.",
+            "enum": [
+              "protein_sequence"
+            ],
+            "type": "string"
+          },
+          "sequence": {
+            "description": "Protein sequence used by the referenced homology outcome.",
+            "maxLength": 100000,
+            "minLength": 1,
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "kind",
+          "sequence"
+        ],
+        "type": "object"
+      },
+      "MSAPlacementRequest": {
+        "additionalProperties": false,
+        "properties": {
+          "$schema": {
+            "description": "A URL to the JSON Schema for this object.",
+            "examples": [
+              "https://example.com/schemas/MSAPlacementRequest.json"
+            ],
+            "format": "uri",
+            "readOnly": true,
+            "type": "string"
+          },
+          "homology_outcome_receipt_id": {
+            "description": "Canonical outcome receipt returned by POST /v1/homology.",
+            "pattern": "^out_[0-9a-f]{64}$",
+            "type": "string"
+          },
+          "query": {
+            "$ref": "#/components/schemas/MSAPlacementQuery"
+          }
+        },
+        "required": [
+          "query",
+          "homology_outcome_receipt_id"
+        ],
+        "type": "object"
+      },
+      "ObjectRef": {
+        "additionalProperties": false,
+        "properties": {
+          "bucket": {
+            "type": "string"
+          },
+          "content_type": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string"
+          },
+          "object_id": {
+            "type": "string"
+          },
+          "object_key": {
+            "type": "string"
+          },
+          "path": {
+            "type": "string"
+          },
+          "sha256": {
+            "type": "string"
+          },
+          "size_bytes": {
+            "format": "int64",
+            "type": "integer"
+          },
+          "storage_backend": {
+            "type": "string"
+          },
+          "uri": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "object_id",
+          "kind",
+          "size_bytes",
+          "sha256"
         ],
         "type": "object"
       },
@@ -2161,7 +4002,7 @@
   "paths": {
     "/v1/homology": {
       "post": {
-        "description": "Runs one typed protein query against one resolved immutable database release and returns completed ranked results directly. This is a bounded stateless operation: no public job, polling, or result pagination is involved.",
+        "description": "Runs one typed protein query against one resolved immutable database release and returns completed ranked candidates and requested evidence directly. Candidates are retrieval measurements, not asserted homologs. This is a bounded stateless operation: no public job, polling, or result pagination is involved.",
         "operationId": "homology_search",
         "parameters": [
           {
@@ -2210,6 +4051,11 @@
                   "type": "string"
                 }
               },
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                }
+              },
               "X-Request-ID": {
                 "schema": {
                   "type": "string"
@@ -2295,7 +4141,15 @@
                 }
               }
             },
-            "description": "Too Many Requests"
+            "description": "Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying this query.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "content": {
@@ -2328,7 +4182,7 @@
             "description": "Gateway Timeout"
           }
         },
-        "summary": "Search for homologous protein sequences",
+        "summary": "Search for protein homology candidates",
         "tags": [
           "Homology"
         ],
@@ -2342,7 +4196,7 @@
     },
     "/v1/homology/batch": {
       "post": {
-        "description": "Runs 1 to 16 ordered typed protein queries with shared search controls. The operation is bounded, synchronous, and all-or-nothing: it returns completed results in query order or one error for the complete batch.",
+        "description": "Runs 1 to 16 ordered typed protein queries with shared search controls. The operation is bounded, synchronous, and all-or-nothing: it returns completed candidate sets in query order or one error for the complete batch.",
         "operationId": "homology_many",
         "parameters": [
           {
@@ -2391,6 +4245,11 @@
                   "type": "string"
                 }
               },
+              "Retry-After": {
+                "schema": {
+                  "type": "string"
+                }
+              },
               "X-Request-ID": {
                 "schema": {
                   "type": "string"
@@ -2476,7 +4335,15 @@
                 }
               }
             },
-            "description": "Too Many Requests"
+            "description": "Too Many Requests",
+            "headers": {
+              "Retry-After": {
+                "description": "Whole seconds to wait before retrying this query.",
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
           },
           "500": {
             "content": {
@@ -2509,7 +4376,7 @@
             "description": "Gateway Timeout"
           }
         },
-        "summary": "Search for homologous protein sequences in a batch",
+        "summary": "Search for protein homology candidates in a batch",
         "tags": [
           "Homology"
         ],
@@ -2978,6 +4845,1212 @@
           {
             "lang": "bash",
             "source": "curl --request GET \\\n  --url \"https://api.rafflesia.ai/v1/homology/releases/{database_release_id}/filter-schema\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\"\n"
+          }
+        ]
+      }
+    },
+    "/v1/homology/target-spaces": {
+      "post": {
+        "description": "Resolves a database's default or explicitly selected release, applies the metadata filter before candidate generation, and returns the resulting immutable target population. Search creation performs the same resolution automatically; create a target space explicitly only when the exact population will be reused.",
+        "operationId": "homology_target_spaces_create",
+        "parameters": [
+          {
+            "description": "Retry identity for this immutable target-space request.",
+            "in": "header",
+            "name": "Idempotency-Key",
+            "required": true,
+            "schema": {
+              "description": "Retry identity for this immutable target-space request.",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateHomologyTargetSpaceRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Created",
+            "headers": {
+              "Location": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-API-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "402": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Payment Required"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          },
+          "504": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Gateway Timeout"
+          }
+        },
+        "summary": "Create an immutable reusable homology target space",
+        "tags": [
+          "Homology"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request POST \\\n  --url \"https://api.rafflesia.ai/v1/homology/target-spaces\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\" \\\n  --header \"Idempotency-Key: \u003cIdempotency-Key\u003e\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n    \"filter\": {\n      \"filters\": [],\n      \"op\": \"and\"\n    }\n  }'\n"
+          }
+        ]
+      }
+    },
+    "/v1/homology/target-spaces/{homology_target_space_id}": {
+      "get": {
+        "description": "Returns the canonical filter, exact target counts, immutable release bindings, and qualified search policies for one reusable target population.",
+        "operationId": "homology_target_spaces_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "homology_target_space_id",
+            "required": true,
+            "schema": {
+              "pattern": "^htsp_[0-9a-f]{64}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeHomologyTargetSpace"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Retrieve an immutable reusable homology target space",
+        "tags": [
+          "Homology"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request GET \\\n  --url \"https://api.rafflesia.ai/v1/homology/target-spaces/{homology_target_space_id}\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\"\n"
+          }
+        ]
+      }
+    },
+    "/v1/sequences/msa/a3m/{a3m_object_id}": {
+      "get": {
+        "operationId": "sequences.msa.a3m.download",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "a3m_object_id",
+            "required": true,
+            "schema": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/x-a3m": {
+                "schema": {
+                  "contentMediaType": "application/octet-stream",
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Immutable query-anchored AlphaFold A3M bytes.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-SHA256": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Object-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Download an immutable AlphaFold-compatible A3M artifact",
+        "tags": [
+          "MSA"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request GET \\\n  --url \"https://api.rafflesia.ai/v1/sequences/msa/a3m/{a3m_object_id}\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\"\n"
+          }
+        ]
+      }
+    },
+    "/v1/sequences/msa/alignments/{alignment_object_id}": {
+      "get": {
+        "operationId": "sequences.msa.alignment.download",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "alignment_object_id",
+            "required": true,
+            "schema": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "text/x-fasta": {
+                "schema": {
+                  "contentMediaType": "application/octet-stream",
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Immutable aligned FASTA bytes produced by MSA materialization.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-SHA256": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Object-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Download immutable materialized aligned FASTA bytes",
+        "tags": [
+          "MSA"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request GET \\\n  --url \"https://api.rafflesia.ai/v1/sequences/msa/alignments/{alignment_object_id}\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\"\n"
+          }
+        ]
+      }
+    },
+    "/v1/sequences/msa/alphafold": {
+      "post": {
+        "operationId": "sequences.msa.alphafold",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AlphaFoldMSABuildRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeAlphaFoldMSABuildData"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeAlphaFoldMSABuildData"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeAlphaFoldMSABuildData"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeAlphaFoldMSABuildData"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeAlphaFoldMSABuildData"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeAlphaFoldMSABuildData"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeAlphaFoldMSABuildData"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeAlphaFoldMSABuildData"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeAlphaFoldMSABuildData"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeAlphaFoldMSABuildData"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Build AF2, AF2-multimer, or AF3 query-anchored A3M artifacts with Tomato",
+        "tags": [
+          "MSA"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request POST \\\n  --url \"https://api.rafflesia.ai/v1/sequences/msa/alphafold\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n    \"databases\": {\n      \"mgnify\": \"\u003cmgnify\u003e\",\n      \"uniref90\": \"\u003cuniref90\u003e\"\n    },\n    \"profile\": \"af2\",\n    \"query\": {\n      \"id\": \"\u003cid\u003e\",\n      \"kind\": \"protein_sequence\",\n      \"sequence\": \"\u003csequence\u003e\"\n    }\n  }'\n"
+          }
+        ]
+      }
+    },
+    "/v1/sequences/msa/alphafold/manifests/{manifest_object_id}": {
+      "get": {
+        "operationId": "sequences.msa.alphafold.manifest.download",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "manifest_object_id",
+            "required": true,
+            "schema": {
+              "pattern": "^sha256:[0-9a-f]{64}$",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "contentMediaType": "application/octet-stream",
+                  "format": "binary",
+                  "type": "string"
+                }
+              }
+            },
+            "description": "Immutable AlphaFold MSA build manifest bytes.",
+            "headers": {
+              "Cache-Control": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Disposition": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Length": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Content-Type": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Content-SHA256": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Object-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorModel"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Download an immutable AlphaFold MSA build manifest",
+        "tags": [
+          "MSA"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request GET \\\n  --url \"https://api.rafflesia.ai/v1/sequences/msa/alphafold/manifests/{manifest_object_id}\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\"\n"
+          }
+        ]
+      }
+    },
+    "/v1/sequences/msa/materialize": {
+      "post": {
+        "operationId": "sequences.msa.materialize",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MSAMaterializeRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAMaterializeData"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAMaterializeData"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAMaterializeData"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAMaterializeData"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAMaterializeData"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAMaterializeData"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAMaterializeData"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAMaterializeData"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAMaterializeData"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAMaterializeData"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Materialize a conventional aligned FASTA from an immutable MSA placement",
+        "tags": [
+          "MSA"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request POST \\\n  --url \"https://api.rafflesia.ai/v1/sequences/msa/materialize\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n    \"placement_object_id\": \"\u003cplacement_object_id\u003e\"\n  }'\n"
+          }
+        ]
+      }
+    },
+    "/v1/sequences/msa/place": {
+      "post": {
+        "operationId": "sequences.msa.place",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/MSAPlacementRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAPlacementData"
+                }
+              }
+            },
+            "description": "OK",
+            "headers": {
+              "Rafflesia-Contract-Digest": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "Rafflesia-Version": {
+                "schema": {
+                  "type": "string"
+                }
+              },
+              "X-Request-ID": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAPlacementData"
+                }
+              }
+            },
+            "description": "Bad Request"
+          },
+          "401": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAPlacementData"
+                }
+              }
+            },
+            "description": "Unauthorized"
+          },
+          "403": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAPlacementData"
+                }
+              }
+            },
+            "description": "Forbidden"
+          },
+          "404": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAPlacementData"
+                }
+              }
+            },
+            "description": "Not Found"
+          },
+          "409": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAPlacementData"
+                }
+              }
+            },
+            "description": "Conflict"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAPlacementData"
+                }
+              }
+            },
+            "description": "Unprocessable Entity"
+          },
+          "429": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAPlacementData"
+                }
+              }
+            },
+            "description": "Too Many Requests"
+          },
+          "500": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAPlacementData"
+                }
+              }
+            },
+            "description": "Internal Server Error"
+          },
+          "503": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/EnvelopeMSAPlacementData"
+                }
+              }
+            },
+            "description": "Service Unavailable"
+          }
+        },
+        "summary": "Place one receipt-bound protein sequence into an immutable MSA component",
+        "tags": [
+          "MSA"
+        ],
+        "x-codeSamples": [
+          {
+            "lang": "bash",
+            "source": "curl --request POST \\\n  --url \"https://api.rafflesia.ai/v1/sequences/msa/place\" \\\n  --header \"Authorization: Bearer $RAFFLESIA_API_KEY\" \\\n  --header \"Content-Type: application/json\" \\\n  --data '{\n    \"homology_outcome_receipt_id\": \"\u003chomology_outcome_receipt_id\u003e\",\n    \"query\": {\n      \"id\": \"\u003cid\u003e\",\n      \"kind\": \"protein_sequence\",\n      \"sequence\": \"\u003csequence\u003e\"\n    }\n  }'\n"
           }
         ]
       }

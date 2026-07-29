@@ -12,7 +12,7 @@ Errors use one JSON shape:
     "code": "query_selector_invalid",
     "message": "exactly one of query or queries is required",
     "request_id": "req_…",
-    "doc_url": "https://rafflesia.ai/docs/errors/query_selector_invalid"
+    "doc_url": "https://docs.rafflesia.ai/errors#query_selector_invalid"
   }
 }
 ```
@@ -22,3 +22,109 @@ request or retry. `error.param` and `error.details` appear when more structured
 context is available.
 
 Include `error.request_id` when reporting a problem.
+
+## Codes
+
+Every error carries a `doc_url` pointing at its own code on this page. The codes
+below are the ones the homology surface returns; each was observed against a
+running server rather than read off a constant.
+
+## invalid_json
+
+**400.** The request body is not JSON. `message` carries the parser's position.
+This is a serializer problem, not a field problem — no `param` accompanies it.
+
+## unknown_parameter
+
+**400.** The body is valid JSON but names a field this operation does not
+accept. `param` is the offending field. The usual causes are a typo and sending
+a single-search field such as `query` to `/v1/homology/batch`, or the reverse.
+
+## invalid_filter
+
+**400.** `filter` is syntactically valid JSON but is not a valid predicate — an
+unsupported operator, a malformed node, or a value of the wrong type. `param` is
+`filter`. Distinct from [filter_schema_unavailable](#filter_schema_unavailable),
+which means the release cannot be filtered at all.
+
+## query_selector_invalid
+
+**422.** The batch `queries` array is absent, empty, or longer than the
+documented maximum. `param` is `queries`.
+
+## homology_search_invalid
+
+**422.** A well-formed request that the selected immutable release cannot
+execute as asked: a query outside the protein alphabet, mutually exclusive
+database selectors, an out-of-range `limit`, or an enum this release does not
+support. `param` names the exact member, including its index inside a batch
+(`queries[1].sequence`).
+
+## idempotency_key_invalid
+
+**400.** `Idempotency-Key` exceeds the documented length. `param` is
+`Idempotency-Key`.
+
+## filter_schema_unavailable
+
+**422.** The selected immutable release declares no filter schema, so no filter
+can be enforced against it. `param` is `database_release_id`. Fetch the
+release's filter schema first to see whether filtering is available.
+
+## target_scope_not_enforceable
+
+**422.** The filter is valid and the release has a schema, but this particular
+predicate cannot be enforced over this release's metadata. `param` is `filter`.
+
+## homology_database_releases_list_invalid
+
+**422.** The database named in the path cannot be resolved, or the pagination
+arguments are not usable together. List the database catalog to get a valid
+database id.
+
+## homology_target_space_get_invalid
+
+**422.** The target-space identifier is malformed. Distinct from
+[resource_missing](#resource_missing), which means a well-formed id names
+nothing.
+
+## resource_missing
+
+**404.** A well-formed identifier names a resource that is not registered.
+
+## homology_search_failed
+
+**500.** The engine accepted the request and then failed while executing it.
+Nothing in the request can be corrected; the message is deliberately
+non-specific because the underlying detail describes engine internals. Report
+`request_id`, and `details.upstream_request_id` when present.
+
+## service_unavailable
+
+**503.** The engine could not be reached, or reached and could not execute.
+`details.is_retryable` says whether retrying can help; retry with the same
+`Idempotency-Key`.
+
+## authentication_required
+
+**401.** No credential was presented.
+
+## invalid_credential
+
+**401.** A credential was presented and is not valid. Distinct from
+[authentication_required](#authentication_required) so a client can tell a
+missing key from a rejected one.
+
+## billing_inactive
+
+**402.** The organization has no active billing. `details.plan_url` links to the
+page that restores access.
+
+## usage_limit_exceeded
+
+**402.** The organization is in good standing but has spent the monthly limit it
+configured for itself. Distinct from
+[billing_inactive](#billing_inactive) because the remedy is different: no
+invoice is owed and activating billing changes nothing. Raise or clear the limit
+at `details.plan_url`. Spend is measured against the usage ledger for the
+current calendar month in UTC, the same window `/v1/billing/usage` reports.

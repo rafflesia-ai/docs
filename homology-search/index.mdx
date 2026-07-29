@@ -35,23 +35,118 @@ Use the database and release list operations in the
 | `filter` | Restrict eligible targets by release-backed metadata. |
 | `guarantee` | Require `approximate` or `exhaustive` search. |
 | `significance` | Omit, request when available, or require calibrated significance. |
-| `include` | Include pairwise alignment data; pass `[]` for candidate measurements only. |
+| `evidence` | Return `pairwise_sequence_alignment` or `candidate_measurement`. |
 | `include_attributes` | Project supported target attributes such as `record_id`. |
 | `limit` | Return 1–10,000 ranked targets per query. |
 
 For batches, `queries × limit` may not exceed 1,000 when alignments are included
 or 10,000 without them.
 
-## Results
+## Candidates
 
-A single search returns `results`. A batch returns one entry in `responses` for
+A single search returns `candidates`. A batch returns one entry in `responses` for
 each input query.
 
-Every result includes `rank`, a stable `target.id`, and
-`maxsim.query_to_target`, `maxsim.target_to_query`, and
-`maxsim.bidirectional`. Affine measurements, pairwise alignment, and
-significance appear when requested and supported. The response also records
-`database`, `method`, `usage`, `performance`, `result_sha256`, and `warnings`.
+Every candidate includes `rank`, a stable `target.id`, and the release-owned
+ranking measurement. MaxSim is an order-free retrieval measurement; affine
+measurements, pairwise alignment, and significance appear when requested and
+supported. A candidate row is not itself an assertion that the sequences are
+homologous — that is what `object: "homology_candidate_set"` means. The response
+also records `database`, `method`, `usage`, `performance`, `result_sha256`, and
+`warnings`.
+
+## Deciding whether a candidate is real
+
+Two independent questions, answered by two different parts of the response.
+Do not blend them.
+
+**Is this hit real?** Read `significance.expected_false_hits`. It is the
+expected number of sequences in this search scoring at least this well by
+chance — the same definition as a BLAST E-value — and
+`significance.confidence` buckets it on the usual convention:
+
+| `confidence` | `expected_false_hits` |
+| --- | --- |
+| `high` | ≤ 1e-5 |
+| `moderate` | ≤ 1e-3 |
+| `low` | ≤ 1 |
+| `none` | > 1 |
+
+`significance.bit_score` is the database-size-independent form, comparable
+across releases and corpora while an E-value is not. The identity
+`expected_false_hits == searched_sequence_count * 2^-bit_score` holds exactly
+when `support_status` is `supported_tail_model`. In the counted regime the
+probability comes from the empirical null rather than the fitted tail, so read
+`bit_score` there as the same score on a comparable scale, not as a restatement
+of the E-value.
+
+The E-value is always scaled to `significance.searched_sequence_count`, the
+space the search actually examined after any `filter`. A filtered search
+reports a smaller E-value for the same score than an unfiltered one, which is
+correct: there were fewer chances to score that well.
+
+`significance.support_status` says where the number came from —
+`supported_empirical` when the frozen null contains enough observations to
+count it, `supported_tail_model` when it is extrapolated through the fitted
+extreme-value tail below `minimum_resolvable_probability`, and
+`insufficient_tail_resolution` or `out_of_support` when the calibration cannot
+answer at all. Null numeric values always mean the calibration declined, never
+that the hit is insignificant.
+
+An extrapolated value is auditable rather than opaque: `significance.tail_model`
+carries the fitted parameters, so the probability can be recomputed rather than
+taken on trust.
+
+```text
+pair_tail_probability = k * exp(-lambda * raw_score)      when support_status is supported_tail_model
+expected_false_hits   = pair_tail_probability * searched_sequence_count
+```
+
+`tail_model.threshold_score` is the lower bound of the fitted tail region, not
+the point where extrapolation takes over. The counted null stays authoritative
+above it for as long as it still has observations to count, so check
+`support_status` rather than comparing the score to the threshold yourself.
+
+`tail_model.holdout_kolmogorov_smirnov` is the goodness-of-fit distance from the
+held-out calibration split; read it together with
+`tail_model.holdout_exceedance_count`, since the distance alone means little
+without the sample size behind it. A tail that fails that test at
+`holdout_significance_level` is never served — the API reports
+`insufficient_tail_resolution` instead of extrapolating through a bad fit.
+
+**Did the search miss anything?** An E-value assumes the score was computed.
+An `approximate` guarantee permits a search policy that never scores some
+targets, so a per-hit E-value says nothing about what was dropped. Use
+`guarantee: "exhaustive"` when completeness matters. `database.searched_target_count`
+and `database.searched_residue_count` report the space the search covered — the
+same numbers the E-value is scaled to — and `execution.policy` names the policy
+that produced it.
+
+To inspect a candidate directly, request `pairwise_sequence_alignment` and read
+`alignment.sequence_identity_ratio` with `query_coverage_ratio` and
+`target_coverage_ratio`. Identity over a short local segment is different
+evidence from identity spanning most of both sequences. When calibrated
+significance is unavailable, the API reports that once in
+`evidence_summary.significance`; it does not silently promote retrieval
+candidates into homologs.
+
+## BLAST tabular output
+
+The CLI can emit BLAST `-outfmt 6` so existing pipelines work unchanged:
+
+```bash
+rafflesia homology search --sequence MKTAYIAKQR --format blast-tab
+```
+
+Columns are the canonical twelve, with `evalue` from
+`significance.expected_false_hits` and `bitscore` from `significance.bit_score`.
+
+When the selected release has no qualified calibration both are written `NA`,
+not a number. The format has nowhere to say "unknown", and a numeric stand-in
+would be worse than useless: every BLAST pipeline filters on `evalue < 1e-5`,
+which a sentinel like `-1` passes, silently promoting uncalibrated rows to
+confident hits. `NA` is what R and pandas already read as missing, and NaN
+comparisons are false, so the same filter drops the row instead.
 
 The generated [endpoint reference](/api-reference/introduction) is the source of
 truth for schemas and allowed values.
