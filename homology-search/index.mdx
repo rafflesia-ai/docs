@@ -3,8 +3,34 @@ title: Homology search
 description: The query, release, controls, and measurements in one completed search.
 ---
 
-Both search operations are synchronous: one request returns the completed
-search. There is no public job or polling resource.
+Use the synchronous operations for compact interactive responses. Use a
+retained search when you need more than 5,000 rows, a stable cursor, or work
+that can outlive one HTTP connection. A retained search can preserve up to
+10,000 ranked rows for 30 days.
+
+## Research uses and scope
+
+This API is a protein-sequence homology measurement primitive, not a general
+bioinformatics workbench. It is useful for:
+
+- finding candidate remote homologs for follow-up analysis;
+- seeding an MSA pipeline with release-pinned, reproducible search lanes;
+- measuring sequence similarity and coverage for family curation or dataset
+  deduplication;
+- restricting a search to an exact taxonomic or annotation-backed subset;
+- comparing approximate retrieval with an exhaustive reference search; and
+- collecting auditable alignment and calibrated-null evidence before a caller
+  applies its own scientific threshold.
+
+Version 1 accepts protein sequences only. It does not search DNA or RNA, accept
+profile HMMs or structures as queries, construct an MSA or phylogenetic tree,
+infer orthology or paralogy, assign protein function, or make clinical or
+mechanistic conclusions. It also searches only the immutable databases and
+metadata exposed by the catalog; the public API has no arbitrary private-corpus
+upload path. Corpus coverage, metadata completeness, and calibration support
+therefore bound what a valid search can find and which significance values it
+can report. Use the returned candidates and provenance as inputs to specialized
+downstream tools, not as biological conclusions.
 
 ## Query
 
@@ -12,7 +38,8 @@ Use the endpoint that matches the query cardinality:
 
 - `POST /v1/homology` accepts `query`, one typed protein sequence;
 - `POST /v1/homology/batch` accepts `queries`, 1–16 typed protein sequences
-  that share the same controls.
+  that share the same controls;
+- `POST /v1/homology/searches` creates one durable, cursor-paginated search.
 
 Each query has `kind: "protein_sequence"` and a `sequence`. Batch responses stay
 in input order. The single endpoint rejects `queries`, and the batch endpoint
@@ -20,10 +47,17 @@ rejects `query`.
 
 ## Database
 
-Send exactly one of:
+Send at most one of:
 
 - `database` — a database ID or slug; the server uses its advertised release;
-- `database_release_id` — an exact immutable release.
+- `database_release_id` — an exact immutable release;
+- `target_space_id` — the immutable scope returned as
+  `database.target_space_id` by a prior filtered search.
+
+Omit all selectors to use the server-advertised default database and release.
+`target_space_id` is mutually exclusive with `database`, `database_release_id`,
+and `filter`. This makes the filtered-search response itself the bootstrap for
+reusing an exact scope; there is no public target-space creation endpoint.
 
 Use the database and release list operations in the
 [API reference](/api-reference/introduction) to discover valid identifiers.
@@ -36,11 +70,54 @@ Use the database and release list operations in the
 | `guarantee` | Require `approximate` or `exhaustive` search. |
 | `significance` | Omit, request when available, or require calibrated significance. |
 | `evidence` | Return `pairwise_sequence_alignment` or `candidate_measurement`. |
-| `include_attributes` | Project supported target attributes such as `record_id`. |
-| `limit` | Return 1–10,000 ranked targets per query. |
+| `limit` | Return 1–5,000 ranked targets inline per query. Defaults to 25. |
 
-For batches, `queries × limit` may not exceed 1,000 when alignments are included
-or 10,000 without them.
+For batches, the aggregate may not exceed 10,000 candidate measurements or
+1,000 pairwise alignments. Both synchronous operations also enforce a 16 MiB
+encoded-response ceiling because each candidate includes its canonical target
+sequence. A valid request can therefore hit the byte ceiling before the row
+ceiling when targets or alignments are long.
+
+## Retained searches
+
+Create a retained search with a required `Idempotency-Key`. It accepts the same
+flat scientific fields as `POST /v1/homology`; only the delivery model and
+`limit` ceiling differ. Retained `limit` may be 1–10,000 and defaults to 25.
+Add `Prefer: respond-async` to return after durable acceptance, or omit it to
+let the server wait briefly for a terminal result.
+
+```bash
+curl https://api.rafflesia.ai/v1/homology/searches \
+  -H "Authorization: Bearer $RAFFLESIA_API_KEY" \
+  -H "Idempotency-Key: msa-source-001" \
+  -H "Prefer: respond-async" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "query": {"kind": "protein_sequence", "sequence": "MTEYKLVVVGAGGVGKSAL"},
+    "database": "uniref90",
+    "guarantee": "approximate",
+    "evidence": "pairwise_sequence_alignment",
+    "significance": "if_available",
+    "limit": 10000
+  }'
+```
+
+Poll `GET /v1/homology/searches/{homology_search_id}`. Once the status is
+`succeeded`, page `GET /v1/homology/searches/{homology_search_id}/results` with
+`limit` from 1–100 and pass each opaque `next_cursor` back as
+`starting_after`. Cursors are bound to the retained result set and expire with
+it; do not construct or persist them as scientific identifiers.
+
+Cancel queued or running work with
+`POST /v1/homology/searches/{homology_search_id}/cancel`. Cancellation is
+idempotent and the resource remains inspectable with status `canceled`.
+Succeeded and failed resources are immutable and return 409; expired resources
+return 410.
+
+The 10,000 ceiling is per search or MSA source lane, not per final MSA. MSA
+builders may merge several release-pinned lanes and then deduplicate them, so a
+merged MSA can be larger while each underlying search remains independently
+bounded and reproducible.
 
 ## Candidates
 
@@ -52,7 +129,7 @@ ranking measurement. MaxSim is an order-free retrieval measurement; affine
 measurements, pairwise alignment, and significance appear when requested and
 supported. A candidate row is not itself an assertion that the sequences are
 homologous — that is what `object: "homology_candidate_set"` means. The response
-also records `database`, `method`, `usage`, `performance`, `result_sha256`, and
+also records `database`, `execution`, `ranking`, `usage`, `performance`, `result_sha256`, and
 `warnings`.
 
 ## Reading candidate evidence
@@ -61,20 +138,14 @@ Two independent questions, answered by two different parts of the response.
 Do not blend them.
 
 **How surprising is this measurement under the qualified null?** Read
-`significance.expected_false_hits`. It is the expected null-event count for the
+`significance.measurements.expected_false_hits`. It is the expected null-event count for the
 declared `e_value_estimand`, exact searched inventory, and threshold. It has the
 same units as a BLAST E-value, but its assumptions are identified by
 `e_value_method`; it is not a posterior probability that the sequences are
-homologous. `significance.confidence` is only a presentation bucket over a
-qualified expected count:
-`significance.confidence` buckets it on the usual convention:
-
-| `confidence` | `expected_false_hits` |
-| --- | --- |
-| `high` | ≤ 1e-5 |
-| `moderate` | ≤ 1e-3 |
-| `low` | ≤ 1 |
-| `none` | > 1 |
+homologous. The API deliberately does not turn this measurement into a generic
+confidence bucket. Choose and record a threshold appropriate to the caller's
+analysis, then apply it directly to `expected_false_hits` or
+`log_expected_false_hits`.
 
 Use `log_expected_false_hits` for thresholds in the deep tail; it remains the
 authoritative coordinate when `expected_false_hits` underflows. The response
@@ -90,20 +161,20 @@ are `pair_tail_log_probability` and `pair_tail_surprisal_bits`. Surprisal is
 `-log2(p)` information under the null; it is neither an E-value nor a homology
 posterior.
 
-`significance.bit_score` is a database-size-independent fitted-tail coordinate.
+`significance.measurements.bit_score` is a database-size-independent fitted-tail coordinate.
 For the homogeneous tail-times-count construction, the identity
 `expected_false_hits == searched_sequence_count * 2^-bit_score` holds in the
 supported fitted-tail regime. Conditional, stratified, and procedure-level
 E-values need not obey that shortcut; inspect `e_value_method` and
 `e_value_estimand` instead.
 
-The E-value binds `significance.searched_sequence_count` and
-`searched_residue_count`, the space actually examined after any filter. A
+The E-value binds `significance.measurements.searched_sequence_count` and
+`significance.measurements.searched_residue_count`, the space actually examined after any filter. A
 filter changes both the number and potentially the mixture of target strata,
 so clients should use the returned value rather than rescale one from another
 search.
 
-`significance.support_status` says where the number came from —
+`significance.status` says where the number came from —
 `supported_empirical` when the frozen null contains enough observations to
 count it, `supported_tail_model` when it is extrapolated through the fitted
 extreme-value tail below `minimum_resolvable_probability`, and
@@ -111,7 +182,7 @@ extreme-value tail below `minimum_resolvable_probability`, and
 answer at all. Null numeric values always mean the calibration declined, never
 that the hit is insignificant.
 
-An extrapolated value is auditable rather than opaque: `significance.tail_model`
+An extrapolated value is auditable rather than opaque: `significance.measurements.tail_model`
 carries the fitted parameters, so the probability can be recomputed rather than
 taken on trust.
 
@@ -138,8 +209,8 @@ An `approximate` guarantee permits a search policy that never scores some
 targets, so a per-hit E-value says nothing about what was dropped. Use
 `guarantee: "exhaustive"` when completeness matters. `database.searched_target_count`
 and `database.searched_residue_count` report the space the search covered — the
-same numbers the E-value is scaled to — and `execution.policy` names the policy
-that produced it.
+same numbers the E-value is scaled to — and `execution.policy` records the
+requested and resolved guarantee and completeness outcome.
 
 To inspect a candidate directly, request `pairwise_sequence_alignment` and read
 `alignment.sequence_identity_ratio` with `query_coverage_ratio` and
@@ -148,6 +219,23 @@ evidence from identity spanning most of both sequences. When calibrated
 significance is unavailable, the API reports that once in
 `evidence_summary.significance`; it does not silently promote retrieval
 candidates into homologs.
+
+`evidence_summary.is_requested_evidence_complete` answers only whether the
+response carried every evidence class the request contracted for. With the
+default `significance: "if_available"`, it can be true while
+`evidence_summary.significance.status` is `unavailable`; inspect both fields.
+
+## Retries and contract version
+
+Send an optional `Idempotency-Key` of at most 255 characters when retrying the
+same synchronous POST after an ambiguous failure. Retained search creation
+requires the header. In both cases the replay binding lasts 24 hours. A 429
+response includes `Retry-After`; a successful synchronous response does not.
+
+Every homology operation accepts `Rafflesia-API-Version: 2026-08-08` to pin the
+current dated contract; omit it to use the current contract. An unsupported value returns
+`api_version_unsupported` before execution. Generated SDK clients should ignore
+unknown response fields so additive changes remain safe.
 
 ## BLAST tabular output
 
@@ -158,7 +246,8 @@ rafflesia homology search --sequence MKTAYIAKQR --format blast-tab
 ```
 
 Columns are the canonical twelve, with `evalue` from
-`significance.expected_false_hits` and `bitscore` from `significance.bit_score`.
+`significance.measurements.expected_false_hits` and `bitscore` from
+`significance.measurements.bit_score`.
 
 When the selected release has no qualified calibration both are written `NA`,
 not a number. The format has nowhere to say "unknown", and a numeric stand-in

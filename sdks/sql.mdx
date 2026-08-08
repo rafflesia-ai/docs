@@ -1,0 +1,137 @@
+---
+title: Connect with SQL
+description: Query released biological databases through the managed ClickHouse interface.
+---
+
+Rafflesia Databases is an ordinary ClickHouse service. The REST API manages
+account-scoped credentials and release metadata; SQL, binds, schema inspection,
+joins, aggregation, and streaming use ClickHouse's HTTPS interface directly.
+
+## Create a credential
+
+Create a credential with `POST /v1/sql-credentials`. The password is returned
+only by create and rotate. Store it immediately; list responses never contain a
+password or verifier.
+
+```bash
+curl --request POST https://api.rafflesia.ai/v1/sql-credentials \
+  --header "Authorization: Bearer $RAFFLESIA_API_KEY" \
+  --header "Content-Type: application/json" \
+  --data '{"name":"research notebook"}'
+```
+
+The response includes a `username`, one-time `password`, and a secret-free
+`connection` object:
+
+```json
+{
+  "object": "sql_connection",
+  "dialect": "clickhouse",
+  "endpoint": "https://example.clickhouse.cloud:8443",
+  "default_database": "rafflesia_catalog",
+  "catalog_database": "rafflesia_catalog",
+  "contract_version": "2026-08-04"
+}
+```
+
+Set the returned values in your secret manager:
+
+```bash
+export RAFFLESIA_SQL_ENDPOINT='https://example.clickhouse.cloud:8443'
+export RAFFLESIA_SQL_USERNAME='sqlcred_...'
+export RAFFLESIA_SQL_PASSWORD='...'
+```
+
+## Discover releases
+
+The catalog is queryable before the first release exists and never requires
+ClickHouse's internal `FINAL` modifier:
+
+```sql
+SELECT * FROM rafflesia_catalog.service;
+SELECT * FROM rafflesia_catalog.databases ORDER BY database;
+SELECT * FROM rafflesia_catalog.releases ORDER BY database, published_at DESC;
+SELECT * FROM rafflesia_catalog.relation_releases
+ORDER BY database, release, relation;
+SELECT * FROM rafflesia_catalog.current_relations
+ORDER BY database, relation;
+```
+
+`relation_releases.sql_backing` is the exact immutable relation to put in a
+reproducible query. A `current_sql_backing` is an explicitly mutable convenience
+alias for exploration.
+
+## Python
+
+```bash
+pip install clickhouse-connect
+```
+
+```python
+import os
+from urllib.parse import urlparse
+import clickhouse_connect
+
+endpoint = urlparse(os.environ["RAFFLESIA_SQL_ENDPOINT"])
+client = clickhouse_connect.get_client(
+    host=endpoint.hostname,
+    port=endpoint.port or 8443,
+    username=os.environ["RAFFLESIA_SQL_USERNAME"],
+    password=os.environ["RAFFLESIA_SQL_PASSWORD"],
+    database="rafflesia_catalog",
+    secure=endpoint.scheme == "https",
+)
+
+releases = client.query("""
+    SELECT database, release, relation, sql_backing, row_count
+    FROM relation_releases
+    ORDER BY database, release, relation
+""")
+print(releases.result_rows)
+```
+
+## HTTPS SQL
+
+ClickHouse's HTTP interface accepts SQL in the request body and can stream
+formats such as JSONEachRow, Arrow, Native, and Parquet:
+
+```bash
+curl --user "$RAFFLESIA_SQL_USERNAME:$RAFFLESIA_SQL_PASSWORD" \
+  "$RAFFLESIA_SQL_ENDPOINT/?database=rafflesia_catalog" \
+  --data-binary 'SELECT * FROM relation_releases FORMAT JSONEachRow'
+```
+
+## Requel
+
+Rafflesia is the provider; ClickHouse is the SQL dialect:
+
+```toml
+[project]
+dialect = "clickhouse"
+
+[connectors.rafflesia]
+driver = "rafflesia"
+dsn_env = "RAFFLESIA_DSN"
+```
+
+```bash
+export RAFFLESIA_DSN="https://${RAFFLESIA_SQL_USERNAME}:${RAFFLESIA_SQL_PASSWORD}@${RAFFLESIA_SQL_ENDPOINT#https://}/rafflesia_catalog"
+requel catalogpin --connector rafflesia
+requel execute queries/proteins.rql --params '{}'
+```
+
+The DSN path must be the credential response's `default_database` (production
+uses `rafflesia_catalog`; staging uses its own catalog database). The driver
+verifies the unqualified `service` view and its contract version before
+executing. A committed `catalog.rafflesia.lock` pins every released input and
+causes execution to refuse if its advertised bytes, schema, or SQL address move.
+
+## Access boundary
+
+Each credential is a distinct ClickHouse user for attribution and quota
+accounting. The server enforces read-only queries, execution and memory limits,
+result and scan limits, concurrency, and an hourly quota. Credentials can read
+only the polished catalog and published release databases; raw ingest tables and
+private catalog records are not granted. Rotate with
+`POST /v1/sql-credentials/{credential_id}/rotate` and revoke with
+`DELETE /v1/sql-credentials/{credential_id}`.

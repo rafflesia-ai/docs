@@ -13,6 +13,11 @@ https://api.rafflesia.ai
 | --- | --- |
 | `POST` | `/v1/homology` |
 | `POST` | `/v1/homology/batch` |
+| `POST` | `/v1/homology/searches` |
+| `GET` | `/v1/homology/searches` |
+| `GET` | `/v1/homology/searches/{homology_search_id}` |
+| `POST` | `/v1/homology/searches/{homology_search_id}/cancel` |
+| `GET` | `/v1/homology/searches/{homology_search_id}/results` |
 | `GET` | `/v1/homology/databases` |
 | `GET` | `/v1/homology/databases/{database_id}/releases` |
 
@@ -32,23 +37,70 @@ Create keys in the [dashboard](https://dashboard.rafflesia.ai).
 
 ## Responses
 
-Search responses are plain JSON objects. A single query returns `results`; a
+Search responses are plain JSON objects. A single query returns `candidates`; a
 batch returns `responses` in input order. Both include `request_id`, `usage`,
 `performance`, `result_sha256`, and `warnings`.
 
-The two list operations return `data`, `has_more`, and an opaque `next_cursor`
-when another page exists.
+Database and release list operations return `data` and `list_metadata`. Pass the opaque
+`list_metadata.after` value as `after` for the next page or
+`list_metadata.before` as `before` for the previous page. An absent cursor means
+there is no page in that direction.
 
-Successful responses include:
+Successful and unsuccessful responses include:
 
 | Header | Meaning |
 | --- | --- |
 | `X-Request-ID` | The request identifier. |
-| `Rafflesia-API-Version` | The public API version. |
+| `Rafflesia-API-Version` | The dated homology contract used for the response. |
 | `Rafflesia-Contract-Digest` | The served contract digest. |
 
+Every homology operation accepts an optional request header
+`Rafflesia-API-Version: 2026-08-08`. Omit it to use the current contract. A
+different value returns a structured 400 `api_version_unsupported` error before
+the operation executes.
+
 Both `POST /v1/homology` and `POST /v1/homology/batch` accept an optional
-`Idempotency-Key` for safe retries. List operations accept `limit`,
-`starting_after`, and `ending_before`.
+`Idempotency-Key` of at most 255 characters for safe retries. The key is retained
+for 24 hours and must be reused only with the identical request. Creating a
+retained search requires the same header and accepts `Prefer: respond-async` or
+`Prefer: wait=N`. Retained result pages accept `limit` up to 100 and the opaque
+`starting_after` cursor returned as `next_cursor`.
+
+Cancel a queued or running retained search with
+`POST /v1/homology/searches/{homology_search_id}/cancel`. Repeating the request
+is safe. Completed searches return 409 and expired searches return 410.
+
+A 429 response includes `Retry-After` in whole seconds. Successful responses do
+not include that header.
+
+## Versioning and compatibility
+
+The current homology contract is `2026-08-08`. Generated SDKs pin or can send
+that value through the `Rafflesia-API-Version` header. During this pre-release
+period, one dated homology contract is served at a time; unsupported pins fail
+explicitly instead of being decoded as another version. Clients must ignore
+unknown response fields so additive fields remain compatible. Removed or renamed
+fields receive a new contract date and regenerated SDKs.
+
+### 2026-08-08
+
+- renamed `evidence_summary.is_complete` to
+  `is_requested_evidence_complete`;
+- removed the derived `significance.confidence` bucket;
+- set the engine and retained-search frontier to 10,000, the synchronous inline
+  frontier to 5,000, and retained result pages to 100 rows;
+- bounded batches to 10,000 aggregate candidate measurements or 1,000
+  aggregate pairwise alignments;
+- published retained search creation, status, listing, and cursor-paginated
+  result retrieval for large workflows, plus idempotent cancellation;
+- made inline and retained creation share one flat scientific request vocabulary
+  and one candidate representation;
+- removed public planner controls and engine-internal receipt fields;
+- made `is_result_limit_reached` report observed truncation rather than merely
+  equality with the requested limit;
+- made the request version pin, common error headers, 429 `Retry-After`, stable
+  enums, numeric bounds, and RFC 3339 formats explicit;
+- clarified that a filtered response's `database.target_space_id` is the
+  reusable target-space bootstrap.
 
 See [Errors](/errors) for unsuccessful responses.

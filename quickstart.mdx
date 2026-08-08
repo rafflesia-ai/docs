@@ -14,6 +14,7 @@ Then run a search:
 ```bash
 curl https://api.rafflesia.ai/v1/homology \
   -H "Authorization: Bearer $RAFFLESIA_API_KEY" \
+  -H "Rafflesia-API-Version: 2026-08-08" \
   -H "Content-Type: application/json" \
   -d '{
     "query": {
@@ -32,13 +33,15 @@ The completed search is returned immediately. An abridged response looks like:
   "request_id": "req_…",
   "database": {
     "id": "hdb_cath_full_domains",
-    "release_id": "release_…"
+    "release_id": "dbr_…"
   },
-  "results": [
+  "candidates": [
     {
       "rank": 1,
       "target": { "id": "target_…" },
-      "maxsim": { "bidirectional": 0.82 }
+      "measurements": {
+        "maxsim": { "bidirectional": 0.82 }
+      }
     }
   ],
   "warnings": []

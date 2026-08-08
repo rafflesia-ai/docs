@@ -34,8 +34,8 @@
     "library": "lucide"
   },
   "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg",
+    "light": "/logo/rafflesia-logo-black.svg",
+    "dark": "/logo/rafflesia-logo-white.svg",
     "href": "https://rafflesia.ai"
   },
   "favicon": {
@@ -70,7 +70,8 @@
             "group": "Clients",
             "pages": [
               "cli/overview",
-              "sdks/index"
+              "sdks/index",
+              "sdks/sql"
             ]
           }
         ]
@@ -97,8 +98,121 @@
                 "pages": [
                   "POST /v1/homology",
                   "POST /v1/homology/batch",
+                  "POST /v1/homology/searches",
+                  "GET /v1/homology/searches",
+                  "GET /v1/homology/searches/{homology_search_id}",
+                  "POST /v1/homology/searches/{homology_search_id}/cancel",
+                  "GET /v1/homology/searches/{homology_search_id}/results",
                   "GET /v1/homology/databases",
                   "GET /v1/homology/databases/{database_id}/releases"
+                ]
+              },
+              {
+                "group": "SQL credentials",
+                "pages": [
+                  "GET /v1/sql-credentials",
+                  "POST /v1/sql-credentials",
+                  "POST /v1/sql-credentials/{credential_id}/rotate",
+                  "GET /v1/sql-credentials/{credential_id}/usage",
+                  "DELETE /v1/sql-credentials/{credential_id}"
+                ]
+              },
+              {
+                "group": "Account",
+                "pages": [
+                  "GET /v1/account/billing"
+                ]
+              },
+              {
+                "group": "Models",
+                "pages": [
+                  "GET /v1/models",
+                  "GET /v1/models/pricing",
+                  "POST /v1/models/pricing/estimate",
+                  "GET /v1/models/usage",
+                  "GET /v1/models/billing-events",
+                  "GET /v1/models/analytics",
+                  "GET /v1/models/requests/by-endpoint",
+                  "DELETE /v1/models/requests/{request_id}/payloads"
+                ]
+              },
+              {
+                "group": "Runs",
+                "pages": [
+                  "POST /v1/runs",
+                  "GET /v1/runs",
+                  "GET /v1/runs/{run_id}",
+                  "GET /v1/runs/{run_id}/status",
+                  "GET /v1/runs/{run_id}/status/stream",
+                  "GET /v1/runs/{run_id}/result",
+                  "POST /v1/runs/{run_id}/cancel"
+                ]
+              },
+              {
+                "group": "Events",
+                "pages": [
+                  "GET /v1/events",
+                  "GET /v1/events/stream",
+                  "GET /v1/events/{event_id}"
+                ]
+              },
+              {
+                "group": "Webhook endpoints",
+                "pages": [
+                  "GET /v1/webhooks/endpoints",
+                  "POST /v1/webhooks/endpoints",
+                  "GET /v1/webhooks/endpoints/{endpoint_id}",
+                  "PATCH /v1/webhooks/endpoints/{endpoint_id}",
+                  "DELETE /v1/webhooks/endpoints/{endpoint_id}",
+                  "POST /v1/webhooks/endpoints/{endpoint_id}/secret-rotations"
+                ]
+              },
+              {
+                "group": "Webhook deliveries",
+                "pages": [
+                  "GET /v1/webhooks/deliveries",
+                  "POST /v1/webhooks/deliveries",
+                  "GET /v1/webhooks/deliveries/{delivery_id}"
+                ]
+              },
+              {
+                "group": "Limits",
+                "pages": [
+                  "GET /v1/limits"
+                ]
+              },
+              {
+                "group": "Files",
+                "pages": [
+                  "POST /v1/files",
+                  "GET /v1/files/{file_id}",
+                  "HEAD /v1/files/{file_id}",
+                  "GET /v1/storage/files",
+                  "DELETE /v1/storage/files",
+                  "POST /v1/storage/files/import",
+                  "POST /v1/storage/files/move"
+                ]
+              },
+              {
+                "group": "File access",
+                "pages": [
+                  "GET /v1/storage/files/acl",
+                  "PUT /v1/storage/files/acl",
+                  "POST /v1/storage/file-signed-urls",
+                  "GET /v1/storage/settings",
+                  "PUT /v1/storage/settings"
+                ]
+              },
+              {
+                "group": "Resumable uploads",
+                "pages": [
+                  "POST /v1/storage/uploads",
+                  "GET /v1/storage/uploads/{upload_id}",
+                  "DELETE /v1/storage/uploads/{upload_id}",
+                  "POST /v1/storage/uploads/{upload_id}/parts",
+                  "PUT /v1/storage/uploads/{upload_id}/parts/{part_number}",
+                  "POST /v1/storage/uploads/{upload_id}/parts/{part_number}",
+                  "POST /v1/storage/uploads/{upload_id}/complete"
                 ]
               }
             ]

@@ -3,7 +3,7 @@ title: Errors
 description: Error responses from the public Rafflesia API.
 ---
 
-Errors use one JSON shape:
+Primitive API errors use this compact JSON shape:
 
 ```json
 {
@@ -23,11 +23,83 @@ context is available.
 
 Include `error.request_id` when reporting a problem.
 
+The universal execution surface (`/v1/models`, `/v1/runs`, `/v1/files`,
+`/v1/events`, and webhooks) uses the same error object inside its
+ordinary response envelope:
+
+```json
+{
+  "ok": false,
+  "warnings": [],
+  "provenance": { "request_id": "req_…" },
+  "error": {
+    "type": "invalid_request_error",
+    "code": "image_too_large",
+    "message": "Image too large. Correct input.image_url and retry.",
+    "param": "input.image_url",
+    "doc_url": "https://docs.rafflesia.ai/errors#image_too_large",
+    "request_id": "req_…",
+    "is_retryable": false,
+    "errors": [
+      {
+        "loc": ["body", "input", "image_url"],
+        "msg": "Image too large.",
+        "type": "image_too_large",
+        "url": "https://docs.rafflesia.ai/errors#image_too_large",
+        "ctx": { "max_height": 1024, "max_width": 1024 }
+      }
+    ]
+  }
+}
+```
+
+Every execution response, including binary downloads and stream setup, carries
+`X-Request-ID`, `Rafflesia-Version`, and `Rafflesia-Contract-Digest`. Errors
+also carry `Rafflesia-Error-Type` and `Rafflesia-Retryable`. The error-type
+header is identical to `error.code`. A retryable capacity or infrastructure
+failure may carry `Retry-After`.
+
+Rate and concurrency refusals on the execution surface, and request-rate
+refusals on the published metered routes (the non-GET homology and
+sql-credential operations), also carry `RateLimit-Policy` and `RateLimit`.
+The rule: every non-GET request on those routes counts against the
+organization's request-rate limit, while reads are deliberately unmetered so
+status polling never consumes the budget. A 429 relayed from an upstream
+engine carries `Retry-After` only; the `RateLimit` headers appear exclusively
+when this API's own limit produced the refusal, so their limit, remaining,
+and reset values are always real.
+
+Machine logic must use `error.code`, each item’s `type`, and structured `ctx`.
+`message` and `msg` are for people and may improve without a version change.
+`input` appears only for a bounded, non-sensitive scalar that is safe to echo;
+prompts, sequences, structures, credentials, URLs, and raw provider bodies are
+never returned in an error.
+
+## Model and input errors
+
+Model and input failures carry one or more typed items in `error.errors`.
+`loc` starts with `body`, `query`, `path`, or `header` and then names the exact
+nested field. `ctx` carries constraints such as `max_height`, `max_length`, or
+`supported_formats`. Use the item’s `type` for control flow; never parse `msg`.
+
+The outer `message` adds the action the caller should take. These failures are
+normally HTTP 422 and non-retryable: change the named input before submitting
+again. Provider-supplied `input` values are deliberately omitted even when an
+upstream API echoes them.
+
+## Request and infrastructure errors
+
+Infrastructure failures use the same envelope, with the stable request error
+in `error.code` and `Rafflesia-Error-Type`. Retry only when
+`Rafflesia-Retryable: true`, and reuse the same `Idempotency-Key` for a POST.
+The same code and retry decision are retained on a background run, its terminal
+event, SSE delivery, and webhook snapshot.
+
 ## Codes
 
-Every error carries a `doc_url` pointing at its own code on this page. The codes
-below are the ones the homology surface returns; each was observed against a
-running server rather than read off a constant.
+Every error carries a `doc_url` pointing at its own code on this page. The
+sections cover primitive errors, execution lifecycle failures, and the model
+error types currently normalized from endpoint providers.
 
 ## invalid_json
 
@@ -128,3 +200,438 @@ configured for itself. Distinct from
 invoice is owed and activating billing changes nothing. Raise or clear the limit
 at `details.plan_url`. Spend is measured against the usage ledger for the
 current calendar month in UTC, the same window `/v1/billing/usage` reports.
+
+## insufficient_credits
+
+**402, non-retryable.** The estimated run cost exceeds the organization’s
+available prepaid credits. Add credits before submitting again.
+
+## spend_budget_exceeded
+
+**402, non-retryable.** The estimated run cost exceeds both prepaid credit and
+the configured usage limit. Increase both budgets before submitting again.
+
+## billing_required
+
+**402, non-retryable.** The operation requires active billing or sufficient
+account balance.
+
+## rate_limit
+
+**429, retryable.** A request or downstream endpoint is temporarily
+rate-limited. Wait for `Retry-After` and reuse the same `Idempotency-Key`.
+
+## rate_limit_exceeded
+
+**429, retryable.** The organization or endpoint request limit is exhausted.
+`details` and the rate-limit headers identify the active policy and reset.
+
+## concurrency_limit_exceeded
+
+**429, retryable.** An execution surface requested capacity without durable
+queueing and no slot was available. Foreground `POST /v1/runs` normally waits
+until its deadline and returns `start_timeout` instead; background runs remain
+queued and do not expose this refusal.
+
+## start_timeout
+
+**504, non-retryable for that call.** A foreground run did not acquire an
+execution slot before its caller-selected request deadline. Increase
+`Rafflesia-Request-Timeout`, retry as a new foreground call, or submit with
+`background=true` for durable server-side waiting.
+
+## queue_length_exceeded
+
+**429, retryable.** Returned only when the caller supplied
+`rafflesia_max_queue_length` and the endpoint already has more queued runs than
+that caller-selected cutoff. Foundry itself does not impose a queue-size limit;
+omit the parameter for unbounded durable admission.
+
+## endpoint_not_found
+
+**404, non-retryable.** `endpoint` does not identify an executable release.
+Choose an `endpoint_id` returned by `GET /v1/models`.
+
+## model_not_found
+
+**404, non-retryable.** The model id is not present in the model catalog.
+Choose an id returned by `GET /v1/models`.
+
+## model_unavailable
+
+**503, retryable.** The selected endpoint release exists but cannot currently
+execute. Retry the identical pinned request.
+
+## run_not_found
+
+**404, non-retryable.** The run does not exist or is no longer retained.
+
+## run_not_completed
+
+**409, retryable while queued or in progress.** The run has no response yet.
+Poll `status_url` or use `status_stream_url` before retrieving `response_url`.
+
+## run_has_no_response
+
+**409, non-retryable.** The run terminated without output. Inspect the retained
+run error for the actual terminal cause.
+
+## file_not_found
+
+**404, non-retryable.** The file id does not identify a retained file visible
+to the caller.
+
+## file_access_forbidden
+
+**403, non-retryable.** The file exists, but its access policy does not allow
+this identity to read it.
+
+## event_cursor_expired
+
+**410, non-retryable.** `Last-Event-ID` is outside retained event history.
+List `/v1/events` and resume from a retained event id.
+
+## client_token_endpoint_forbidden
+
+**403, non-retryable.** The delegated client token cannot invoke this
+endpoint. Use an allowed endpoint or mint a token with the required scope.
+
+## client_token_execution_mode_forbidden
+
+**403, non-retryable.** The delegated client token cannot use the requested
+foreground or background execution mode.
+
+## client_token_cost_limit_exceeded
+
+**403, non-retryable.** Estimated run cost exceeds the delegated token’s
+per-run ceiling.
+
+## client_token_delegation_forbidden
+
+**403, non-retryable.** A delegated client token cannot mint another client
+token.
+
+## organization_scope_required
+
+**403, non-retryable.** The operation requires an organization-scoped
+identity.
+
+## idempotency_key_reused
+
+**409, non-retryable.** The key was already bound to a different request.
+Reuse it only with byte-equivalent normalized parameters, or send a new key.
+
+## run_terminal
+
+**409, non-retryable.** The run is already terminal and cannot be canceled.
+
+## run_start_deadline_invalid
+
+**422, non-retryable.** A retained run contains an invalid
+`start_deadline_at`. Correct the timestamp before submitting again.
+
+## run_start_deadline_exceeded
+
+**504, non-retryable.** No execution slot became available before the run’s
+explicit start deadline. A later submission needs a new deadline.
+
+## invalid_request
+
+**422, non-retryable.** The request is well-formed JSON but violates an
+endpoint-specific rule. `param` and the first item in `errors` identify the
+field to correct.
+
+## request_body_required
+
+**422, non-retryable.** The operation requires a JSON body.
+
+## request_too_large
+
+**413, non-retryable.** The request body or direct upload exceeds the route’s
+limit. Upload large media through `/v1/files` and pass its URL or file id.
+
+## unsupported_media_type
+
+**415, non-retryable.** `Content-Type` is not accepted by this operation.
+
+## permission_denied
+
+**403, non-retryable.** The authenticated identity cannot perform this
+operation.
+
+## resource_not_found
+
+**404, non-retryable.** A framework-routed execution resource does not exist.
+
+## request_conflict
+
+**409, non-retryable.** The request conflicts with current resource state.
+Retrieve the resource and retry against that state.
+
+## resource_expired
+
+**410, non-retryable.** The resource existed but is no longer retained.
+
+## method_not_allowed
+
+**405, non-retryable.** The route does not support this HTTP method.
+
+## response_media_type_not_acceptable
+
+**406, non-retryable.** `Accept` requests a representation the operation does
+not provide.
+
+## validation_error
+
+**422, non-retryable.** One or more request fields failed JSON Schema
+validation. Correct every item in `error.errors`.
+
+## unknown_field
+
+**422, non-retryable.** The JSON body contains a field that is not declared by
+the endpoint’s `input_schema`. Remove it or use a declared field.
+
+## missing_required_field
+
+**422, non-retryable.** A required field is absent. `loc` identifies it.
+
+## enum_value_invalid
+
+**422, non-retryable.** A string is outside the endpoint’s declared enum.
+`ctx` identifies the enum constraint.
+
+## string_length_invalid
+
+**422, non-retryable.** A string violates its declared length constraint.
+
+## array_length_invalid
+
+**422, non-retryable.** An array has too few or too many items.
+
+## number_out_of_range
+
+**422, non-retryable.** A number violates a minimum, maximum, or exclusivity
+constraint.
+
+## greater_than
+
+**422, non-retryable.** A numeric input must be strictly greater than
+`ctx.gt`.
+
+## greater_than_equal
+
+**422, non-retryable.** A numeric input must be greater than or equal to
+`ctx.ge`.
+
+## less_than
+
+**422, non-retryable.** A numeric input must be strictly less than `ctx.lt`.
+
+## less_than_equal
+
+**422, non-retryable.** A numeric input must be less than or equal to `ctx.le`.
+
+## multiple_of
+
+**422, non-retryable.** A numeric input must be a multiple of
+`ctx.multiple_of`.
+
+## string_format_invalid
+
+**422, non-retryable.** A string does not satisfy its format or pattern.
+
+## value_type_invalid
+
+**422, non-retryable.** A value has the wrong JSON type.
+
+## value_invalid
+
+**422, non-retryable.** A value violates an endpoint constraint not covered by
+a more specific code.
+
+## image_too_large
+
+**422, non-retryable.** The image exceeds endpoint dimensions. `ctx` carries
+the supported maximums; change the field named by `loc`.
+
+## image_too_small
+
+**422, non-retryable.** The image is below endpoint dimensions. `ctx` carries
+the required minimums.
+
+## file_too_large
+
+**422, non-retryable.** An input file exceeds the endpoint’s byte limit.
+
+## image_load_error
+
+**422, non-retryable.** The endpoint could not decode the image at `loc`.
+Replace a corrupt image or use a supported format.
+
+## file_download_error
+
+**422, non-retryable.** The endpoint could not fetch the referenced file. Use
+a caller-readable Foundry file or blob URL and verify that it has not expired.
+
+## face_detection_error
+
+**422, non-retryable.** The selected endpoint requires a detectable face but
+did not find one in the named input.
+
+## sequence_too_short
+
+**422, non-retryable.** A sequence, list, or string is shorter than the
+declared minimum. `ctx.min_length` carries that minimum.
+
+## sequence_too_long
+
+**422, non-retryable.** A sequence, list, or string is longer than the declared
+maximum. `ctx.max_length` carries that maximum.
+
+## one_of
+
+**422, non-retryable.** A value is not one of the supported choices.
+
+## feature_not_supported
+
+**422, non-retryable.** The requested combination of otherwise valid fields is
+not supported by this endpoint release.
+
+## invalid_archive
+
+**422, non-retryable.** An archive is corrupt or has an unsupported format.
+
+## archive_file_count_below_minimum
+
+**422, non-retryable.** An archive contains fewer matching files than
+`ctx.min_count`. `ctx.provided_count` and `ctx.supported_extensions` describe
+what was counted.
+
+## archive_file_count_exceeds_maximum
+
+**422, non-retryable.** An archive contains more matching files than
+`ctx.max_count`.
+
+## audio_duration_too_short
+
+**422, non-retryable.** Audio is shorter than `ctx.min_duration`.
+
+## audio_duration_too_long
+
+**422, non-retryable.** Audio is longer than `ctx.max_duration`.
+
+## video_duration_too_short
+
+**422, non-retryable.** Video is shorter than `ctx.min_duration`.
+
+## video_duration_too_long
+
+**422, non-retryable.** Video is longer than `ctx.max_duration`.
+
+## unsupported_image_format
+
+**422, non-retryable.** The image format is unsupported. `ctx` carries the
+supported formats when the endpoint supplies them.
+
+## unsupported_audio_format
+
+**422, non-retryable.** The audio format is unsupported.
+
+## unsupported_video_format
+
+**422, non-retryable.** The video format is unsupported.
+
+## content_policy_violation
+
+**422, non-retryable.** The endpoint’s content policy rejected the named input.
+
+## no_media_generated
+
+**422, non-retryable.** Execution completed without producing the endpoint’s
+declared media output. Change the input before retrying.
+
+## request_timeout
+
+**504, retryable.** The request exceeded its processing deadline. Retry the
+identical pinned request.
+
+## generation_timeout
+
+**504.** The endpoint exceeded its generation deadline. Follow
+`Rafflesia-Retryable`; retry the identical pinned request only when it is
+`true`.
+
+## startup_timeout
+
+**504, retryable.** An execution worker did not start in time. Retry the
+identical pinned request.
+
+## runner_scheduling_failure
+
+**503, retryable.** No execution worker could be allocated.
+
+## runner_connection_timeout
+
+**503, retryable.** Connecting to the execution worker timed out.
+
+## runner_disconnected
+
+**503, retryable.** The worker disconnected before completing the request.
+
+## runner_connection_refused
+
+**503, retryable.** The worker refused the connection.
+
+## runner_connection_error
+
+**503, retryable.** The worker could not be reached.
+
+## runner_incomplete_response
+
+**502, retryable.** The worker returned an incomplete response.
+
+## runner_server_error
+
+**500.** The worker failed during execution. Follow `Rafflesia-Retryable`:
+retry the identical pinned request only when it is `true`.
+
+## client_disconnected
+
+**499, non-retryable.** The client disconnected before the response was sent.
+Check whether a retained run exists before submitting again.
+
+## client_cancelled
+
+**499, non-retryable.** The client canceled the request.
+
+## bad_request
+
+**400, non-retryable.** Request-level headers or framing are malformed. Correct
+the request before retrying.
+
+## internal_error
+
+**500, non-retryable by default.** Contact support with `request_id` if it
+persists. Never retry automatically unless `Rafflesia-Retryable` is explicitly
+`true`.
+
+## internal_server_error
+
+**500.** A model failed unexpectedly. Follow `Rafflesia-Retryable`; report the
+`request_id` when a permanent failure persists.
+
+## downstream_service_error
+
+**422 for rejected input, otherwise 502.** A dependency could not process the
+normalized request. Correct `error.param` for a 422; for a 502, follow
+`Rafflesia-Retryable`.
+
+## downstream_service_unavailable
+
+**503.** A dependency required by the endpoint is unavailable. Retry only when
+`Rafflesia-Retryable` is `true`.
+
+## downstream_response_invalid
+
+**502, non-retryable.** The endpoint returned output that does not satisfy its
+declared `output_schema`. The endpoint release must be fixed before retrying.
