@@ -89,7 +89,7 @@
           {
             "group": "Endpoints",
             "openapi": {
-              "source": "/api-reference/openapi.json",
+              "source": "https://raw.githubusercontent.com/rafflesia-ai/docs/main/api-reference/openapi.json",
               "directory": "api-reference/endpoints"
             },
             "pages": [
